@@ -1,6 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
+const { uploadBufferToS3 } = require('../utils/s3');
 const Notification = require('../models/Notification');
 const NotificationRecipient = require('../models/NotificationRecipient');
 const User = require('../models/User');
@@ -15,26 +16,9 @@ const fs = require('fs');
 const mkdirp = require('mkdirp');
 const skipAuthForTests = process.env.NODE_ENV === 'test' || process.env.npm_lifecycle_event === 'test' || !!process.env.MOCHA_WORKER_ID;
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = path.join(__dirname, '..', 'uploads', 'notifications');
-    try {
-      mkdirp.sync(dir);
-    } catch (e) {
-      // fallback to fs
-      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    }
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
+// Use memory storage so we can upload directly to S3
 const upload = multer({
-  storage: storage,
+  storage: multer.memoryStorage(),
   limits: {
     fileSize: 5 * 1024 * 1024 // 5MB limit
   },
@@ -95,20 +79,51 @@ router.post('/', auth, authorize('master_admin', 'college_admin'), upload.single
       expiresAt: expiresAt || null
     });
 
-    // Handle file attachment
+    // Handle file attachment: upload to S3 if configured
     if (req.file) {
-      // store relative path for retrieval; ensure URL-friendly path
-      const relPath = path.relative(path.join(__dirname, '..'), req.file.path).replace(/\\/g, '/');
-      notification.attachment = {
-        filename: req.file.filename,
-        originalName: req.file.originalname,
-        mimetype: req.file.mimetype,
-        size: req.file.size,
-        path: relPath
-      };
-      // compute public URL if ASSET_BASE_URL is configured
-      const base = process.env.ASSET_BASE_URL || '';
-      notification.attachmentUrl = base ? `${base}/${relPath}` : `/${relPath}`;
+      try {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const key = `notifications/${uniqueSuffix}${path.extname(req.file.originalname)}`;
+
+        // upload buffer to S3
+        const s3Info = await uploadBufferToS3(req.file.buffer, key, req.file.mimetype);
+
+        notification.attachment = {
+          filename: req.file.originalname,
+          storedName: path.basename(key),
+          mimetype: req.file.mimetype,
+          size: req.file.size,
+          s3Key: key,
+          path: s3Info.url
+        };
+        notification.attachmentUrl = s3Info.url;
+      } catch (err) {
+        // If S3 is not configured or upload failed, fallback to writing file to local uploads/notifications
+        logger.errorLog(err, { context: 'Upload notification attachment to S3' });
+        try {
+          const uniqueSuffixLocal = Date.now() + '-' + Math.round(Math.random() * 1E9);
+          const dir = path.join(__dirname, '..', 'uploads', 'notifications');
+          if (!fs.existsSync(dir)) {
+            try { mkdirp.sync(dir); } catch (e) { fs.mkdirSync(dir, { recursive: true }); }
+          }
+          const filename = uniqueSuffixLocal + path.extname(req.file.originalname);
+          const outPath = path.join(dir, filename);
+          fs.writeFileSync(outPath, req.file.buffer);
+
+          const relPath = path.relative(path.join(__dirname, '..'), outPath).replace(/\\/g, '/');
+          notification.attachment = {
+            filename: filename,
+            originalName: req.file.originalname,
+            mimetype: req.file.mimetype,
+            size: req.file.size,
+            path: relPath
+          };
+          const base = process.env.ASSET_BASE_URL || '';
+          notification.attachmentUrl = base ? `${base}/${relPath}` : `/${relPath}`;
+        } catch (fsErr) {
+          logger.errorLog(fsErr, { context: 'Fallback saving notification attachment locally' });
+        }
+      }
     }
 
     await notification.save();
