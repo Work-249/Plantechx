@@ -1,15 +1,16 @@
-Resources:
-  BackendFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: server/
-      Handler: server.handler
-      Runtime: nodejs22.x
-      Architectures:
-        - x86_64
-      Events:
-        ApiEvent:
-          Type: Api
-          Properties:
-            Path: /{proxy+}
-            Method: any
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 18
+    commands:
+      - echo "Installing dependencies..."
+      - npm install
+  build:
+    commands:
+      - echo "Zipping deployment package..."
+      - zip -r function.zip .
+artifacts:
+  files:
+    - function.zip
