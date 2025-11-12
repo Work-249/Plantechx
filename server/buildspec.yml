@@ -1,16 +1,44 @@
 version: 0.2
 
+env:
+  variables:
+    # MongoDB Connection
+    MONGODB_URI: "mongodb+srv://patnalasrikrishnasai:Login@cluster0.igezekd.mongodb.net/academic_management"
+
+    # Server Configuration
+    PORT: "5000"
+    VITE_API_URL: "https://main.daqm1aijotilg.amplifyapp.com"
+    NODE_ENV: "development"
+
+    # JWT Configuration
+    JWT_SECRET: "7489da8eefb978a24b4d93e10fe4d269"
+    JWT_EXPIRES_IN: "7d"
+
+    # Email Configuration
+    EMAIL_HOST: "smtp.gmail.com"
+    EMAIL_PORT: "587"
+    EMAIL_USER: "caikiet10@gmail.com"
+    EMAIL_PASS: "nqip jcfp xlwz iyme"
+
+    # Frontend URL Configuration
+    FRONTEND_URL: "http://localhost:8080"
+
+    # AWS Configuration
+    AWS_S3_BUCKET: "mern-deploy-bucket"
+    AWS_REGION: "us-east-1"
+
 phases:
   install:
-    runtime-versions:
-      nodejs: 18
     commands:
-      - echo "Installing dependencies..."
+      - echo "📦 Installing dependencies..."
       - npm install
+
   build:
     commands:
-      - echo "Zipping deployment package..."
-      - zip -r function.zip .
+      - echo "🚀 Building Lambda package..."
+      # if your Lambda handler is inside src/ or server.js, zip it
+      - zip -r function.zip . -x "*.git*" "node_modules/aws-sdk/*"
+
 artifacts:
   files:
     - function.zip
