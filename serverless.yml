@@ -1,5 +1,5 @@
 service: plantechx-backend
-frameworkVersion: '3'
+
 
 provider:
   name: aws
