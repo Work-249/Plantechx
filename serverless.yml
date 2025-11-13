@@ -1,6 +1,6 @@
 service: plantechx-backend
+
 frameworkVersion: '3'
-useDotenv: true
 
 provider:
   name: aws
@@ -37,7 +37,6 @@ plugins:
 
 package:
   exclude:
-    - node_modules/**
     - .git/**
     - .vscode/**
     - build/**
