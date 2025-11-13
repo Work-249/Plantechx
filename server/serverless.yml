@@ -1,5 +1,7 @@
 service: plantechx-backend
 
+frameworkVersion: '3'
+
 provider:
   name: aws
   runtime: nodejs18.x
@@ -30,14 +32,31 @@ functions:
           method: ANY
 
 plugins:
+  - serverless-http
   - serverless-offline
   - serverless-dotenv-plugin
+  - serverless-plugin-tracing
 
 package:
-  exclude:
-    - .git/**
-    - .vscode/**
-    - build/**
-    - coverage/**
-    - README.md
-    - .env
+  individually: false
+  patterns:
+    - '!.git/**'
+    - '!.vscode/**'
+    - '!coverage/**'
+    - '!README.md'
+    - '!.env'
+    - '!.env.example'
+    - '!.gitignore'
+    - '!.eslintrc*'
+    - '!jest.config.js'
+    - '!test/**'
+    - '!node_modules/aws-sdk/**'
+  include:
+    - 'node_modules/**'
+    - 'server.js'
+    - 'server/**'
+    - 'config/**'
+    - 'middleware/**'
+    - 'models/**'
+    - 'routes/**'
+    - 'utils/**'
