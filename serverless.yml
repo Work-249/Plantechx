@@ -1,5 +1,6 @@
 service: plantechx-backend
-frameworkVersion: '4'
+frameworkVersion: '3'
+useDotenv: true
 
 provider:
   name: aws
