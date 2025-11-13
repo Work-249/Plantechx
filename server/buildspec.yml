@@ -6,7 +6,7 @@ phases:
       nodejs: 18
     commands:
       - echo "🔧 Installing Serverless CLI globally..."
-      - npm install -g serverless
+      - npm install -g serverless@3
       - serverless --version
       - echo "📦 Installing project dependencies..."
       - npm install
