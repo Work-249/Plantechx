@@ -1,37 +1,39 @@
+// server.js
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const serverless = require("serverless-http");
+const serverless = require('serverless-http');
+const http = require('http');
 require('dotenv').config();
 
+// Database connection
 const connectDB = require('./config/database');
+connectDB();
+
+// Logger middleware
 const logger = require('./middleware/logger');
 
 const app = express();
 
-// Trust Vercel proxy for rate-limiting and correct client IP
+// Trust proxy (for rate-limiting behind API Gateway / Vercel)
 app.set('trust proxy', 1);
-
-// Connect to database
-connectDB();
 
 // Security middleware
 app.use(helmet());
 
-// Rate limiting
+// Rate limiter
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: process.env.NODE_ENV === 'development' ? 1000 : 100, // Higher limit for development
+  max: process.env.NODE_ENV === 'development' ? 1000 : 100,
   message: 'Too many requests from this IP, please try again later.'
 });
 app.use(limiter);
 
-// CORS setup
+// CORS configuration
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:5174',
-  'https://main.daqm1aijotilg.amplifyapp.com'
   process.env.FRONTEND_URL
 ].filter(Boolean);
 
@@ -51,11 +53,11 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
-// Body parsing
+// Body parser
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Debug incoming origins
+// Debugging incoming requests
 app.use((req, res, next) => {
   console.log('👉 Request Origin:', req.headers.origin || 'No origin');
   next();
@@ -81,13 +83,8 @@ app.get('/', (req, res) => {
   res.send('🚀 Server is running!');
 });
 
-// Favicon handling (optional, create public/favicon.ico)
+// Serve uploaded files
 const path = require('path');
-app.use('/favicon.ico', express.static(path.join(__dirname, 'public', 'favicon.ico')));
-app.use('/favicon.png', express.static(path.join(__dirname, 'public', 'favicon.png')));
-
-// Serve uploaded assets (attachments) so attachmentUrl paths are reachable
-// Files are stored under server/uploads/... by the notifications route
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Health check
@@ -104,7 +101,7 @@ app.use('*', (req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-// Error handling
+// Error handler
 app.use((err, req, res, next) => {
   logger.errorLog(err, { context: 'Unhandled error' });
   res.status(err.statusCode || 500).json({
@@ -112,10 +109,10 @@ app.use((err, req, res, next) => {
   });
 });
 
-const http = require('http');
+// Create HTTP server for Socket.IO
 const server = http.createServer(app);
 
-// Initialize Socket.IO for real-time activity updates
+// Socket.IO for real-time updates
 const { Server } = require('socket.io');
 const io = new Server(server, {
   cors: {
@@ -124,7 +121,7 @@ const io = new Server(server, {
   }
 });
 
-// Periodically emit active student count every 15 seconds
+// Periodically emit active student count
 const User = require('./models/User');
 const emitActiveCounts = async () => {
   try {
@@ -132,16 +129,14 @@ const emitActiveCounts = async () => {
     const activeStudents = await User.countDocuments({ role: 'student', lastLogin: { $gte: fifteenMinutesAgo } });
     io.emit('activity:update', { activeStudents });
   } catch (err) {
-  logger.errorLog(err, { context: 'Failed to emit active counts' });
+    logger.errorLog(err, { context: 'Failed to emit active counts' });
   }
 };
 setInterval(emitActiveCounts, 15 * 1000);
-// Emit once at startup
 emitActiveCounts();
 
+// Start server locally if not Lambda
 const PORT = process.env.PORT || 5000;
-
-// Only start listening when this module is the entry point (not when required by tests)
 if (require.main === module) {
   server.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
@@ -149,4 +144,5 @@ if (require.main === module) {
   });
 }
 
-exports.handler = serverless(server);
+// Export for AWS Lambda
+module.exports.handler = serverless(app);
