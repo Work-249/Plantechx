@@ -13,7 +13,7 @@ env:
     EMAIL_PASS: "nqip jcfp xlwz iyme"
     AWS_S3_BUCKET: "mern-deploy-bucket"
     PORT: "5000"
-    # DO NOT set AWS_REGION here as it is reserved by Lambda/CodeBuild
+    # AWS_REGION is reserved; do not set it here
 
 phases:
   install:
@@ -26,7 +26,7 @@ phases:
       - npm install
   pre_build:
     commands:
-      - echo "🧹 Cleaning previous builds (optional)"
+      - echo "🧹 Cleaning previous builds..."
       - rm -rf .serverless
   build:
     commands:
