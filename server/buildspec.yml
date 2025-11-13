@@ -1,27 +1,65 @@
+# version: 0.2
+#     # AWS_REGION is reserved; do not set it here
+# phases:
+#   install:
+#     runtime-versions:
+#       nodejs: 18
+#     commands:
+#       - echo "🔧 Installing Serverless CLI globally..."
+#       - npm install -g serverless@3
+#       - serverless --version
+#       - echo "📦 Installing project dependencies..."
+#       - npm install
+#   pre_build:
+#     commands:
+#       - echo "🧹 Cleaning previous builds..."
+#       - rm -rf .serverless
+#   build:
+#     commands:
+#       - echo "🚀 Deploying backend to AWS Lambda using Serverless..."
+#       - serverless deploy --stage prod --region ap-south-1
+# artifacts:
+#   files:
+#     - serverless.yml
+#     - package.json
+#     - server.js
+#     - server/**/*
+#   discard-paths: no
+
 version: 0.2
-    # AWS_REGION is reserved; do not set it here
+
+env:
+  variables:
+    NODE_ENV: "production"
+    # (keep your other env variables here)
+
 phases:
   install:
     runtime-versions:
-      nodejs: 18
+      nodejs: 22
     commands:
-      - echo "🔧 Installing Serverless CLI globally..."
-      - npm install -g serverless@3
-      - serverless --version
-      - echo "📦 Installing project dependencies..."
-      - npm install
+      - echo "📦 Installing project dependencies (CI)..."
+      - npm ci
+      - echo "serverless (local) version:"
+      - npx serverless --version || true
+
   pre_build:
     commands:
       - echo "🧹 Cleaning previous builds..."
       - rm -rf .serverless
+
   build:
     commands:
-      - echo "🚀 Deploying backend to AWS Lambda using Serverless..."
-      - serverless deploy --stage prod --region ap-south-1
+      - echo "🚀 Packaging and deploying with local serverless (v3)..."
+      # create package and save verbose output so we can debug if something fails
+      - npx serverless deploy --stage prod --region ap-south-1 --verbose > sdeploy.out 2>&1 || true
+      - echo "---- last 200 lines of serverless output ----"
+      - tail -n 200 sdeploy.out || true
+
 artifacts:
   files:
-    - serverless.yml
-    - package.json
-    - server.js
-    - server/**/*
+    - sdeploy.out
   discard-paths: no
+
+
+
