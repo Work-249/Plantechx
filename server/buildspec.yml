@@ -12,23 +12,30 @@ env:
     EMAIL_USER: "caikiet10@gmail.com"
     EMAIL_PASS: "nqip jcfp xlwz iyme"
     AWS_S3_BUCKET: "mern-deploy-bucket"
-    AWS_REGION: "ap-south-1"
     PORT: "5000"
+    # DO NOT set AWS_REGION here as it is reserved by Lambda/CodeBuild
 
 phases:
   install:
     runtime-versions:
       nodejs: 18
     commands:
-      - echo "🔧 Installing Serverless CLI and dependencies..."
+      - echo "🔧 Installing Serverless CLI globally..."
       - npm install -g serverless
+      - echo "📦 Installing project dependencies..."
       - npm install
+  pre_build:
+    commands:
+      - echo "🧹 Cleaning previous builds (optional)"
+      - rm -rf .serverless
   build:
     commands:
-      - echo "🚀 Deploying backend to AWS Lambda..."
+      - echo "🚀 Deploying backend to AWS Lambda using Serverless..."
       - serverless deploy --stage prod --region ap-south-1
 artifacts:
   files:
     - serverless.yml
     - package.json
     - server.js
+    - server/**/*
+  discard-paths: no
