@@ -1,15 +1,13 @@
 version: 0.2
-    # AWS_REGION is reserved; do not set it here
 phases:
   install:
     runtime-versions:
       nodejs: 18
     commands:
-      - echo "🔧 Installing Serverless CLI globally..."
-      - npm install -g serverless
-      - serverless --version
-      - echo "📦 Installing project dependencies..."
-      - npm install
+      - echo "📦 Installing project dependencies (npm ci)..."
+      - npm ci
+      - echo "🔍 Serverless version (local via npx):"
+      - npx serverless --version
   pre_build:
     commands:
       - echo "🧹 Cleaning previous builds..."
@@ -17,7 +15,7 @@ phases:
   build:
     commands:
       - echo "🚀 Deploying backend to AWS Lambda using Serverless..."
-      - serverless deploy --stage prod --region ap-south-1 --verbose
+      - npx serverless deploy --stage prod --region ap-south-1 --verbose
 artifacts:
   files:
     - serverless.yml
@@ -25,4 +23,3 @@ artifacts:
     - server.js
     - server/**/*
   discard-paths: no
-
