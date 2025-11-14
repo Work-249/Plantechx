@@ -1,0 +1,31 @@
+service: my-backend-api
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: ap-south-1
+  stage: dev
+  timeout: 10
+  memorySize: 256
+
+functions:
+  api:
+    handler: src/handler.handler
+    events:
+      - httpApi:
+          path: /{proxy+}
+          method: ANY
+
+package:
+  individually: true
+  exclude:
+    - node_modules/**
+    - .git/**
+    - .vscode/**
+    - test/**
+    
+custom:
+  webpack:
+    webpackConfig: ./webpack.config.js
+    includeModules: true
