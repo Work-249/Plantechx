@@ -1,25 +1,30 @@
 version: 0.2
+
+env:
+  variables:
+    STAGE: "dev"                      # change per pipeline stage if you want
+    AWS_REGION: "ap-south-1"          # change to your preferred region
+
 phases:
   install:
     runtime-versions:
-      nodejs: 18
+      nodejs: 20
     commands:
-      - echo "📦 Installing project dependencies (npm ci)..."
+      - echo "Installing dependencies..."
       - npm ci
-      - echo "🔍 Serverless version (local via npx):"
-      - npx serverless --version
+      - echo "Ensure Serverless CLI is available..."
+      - npx --no-install serverless --version || npm install -g serverless
   pre_build:
     commands:
-      - echo "🧹 Cleaning previous builds..."
-      - rm -rf .serverless
+      - echo "Pre-build: show AWS identity"
+      - aws sts get-caller-identity
   build:
     commands:
-      - echo "🚀 Deploying backend to AWS Lambda using Serverless..."
-      - npx serverless deploy --stage prod --region ap-south-1 --verbose
+      - echo "Running tests (if any)..."
+      - npm run test || true
+      - echo "Deploying via Serverless Framework"
+      - npx serverless deploy --stage $STAGE --region $AWS_REGION --verbose
 artifacts:
   files:
-    - serverless.yml
-    - package.json
-    - server.js
-    - server/**/*
+    - '**/*'
   discard-paths: no
