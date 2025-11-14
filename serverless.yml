@@ -18,7 +18,6 @@ functions:
           method: ANY
 
 plugins:
-  - serverless-offline
   - serverless-webpack
 
 package:
