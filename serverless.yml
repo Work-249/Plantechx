@@ -17,9 +17,6 @@ functions:
           path: /{proxy+}
           method: ANY
 
-plugins:
-  - serverless-webpack
-
 package:
   individually: true
   exclude:
