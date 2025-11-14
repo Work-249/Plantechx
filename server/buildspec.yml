@@ -8,15 +8,19 @@ phases:
       - echo "Installing Serverless v3 globally..."
       - npm install -g serverless@3
 
+      - echo "Moving into serverless folder..."
+      - cd ../serverless
+
       - echo "Installing ALL project dependencies..."
       - npm install --production=false
 
   build:
     commands:
       - echo "Packaging Serverless service..."
+      - cd ../serverless
       - serverless package
 
 artifacts:
   files:
-    - .serverless/**/*
+    - serverless/.serverless/**/*
   name: serverless-artifacts
