@@ -5,15 +5,16 @@ phases:
     runtime-versions:
       nodejs: 22
     commands:
+      - echo "Installing Serverless v3 globally..."
+      - npm install -g serverless@3
+      - serverless --version
       - echo "Installing project dependencies..."
       - npm install
-      - echo "Serverless Version:"
-      - npx serverless --version
 
   build:
     commands:
-      - echo "Packaging with npx serverless v3..."
-      - npx serverless package
+      - echo "Packaging with Serverless v3..."
+      - serverless package
 
 artifacts:
   files:
