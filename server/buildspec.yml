@@ -7,9 +7,9 @@ phases:
     commands:
       - echo "Installing Serverless v3 globally..."
       - npm install -g serverless@3
-      - serverless --version
-      - echo "Installing project dependencies..."
-      - npm install
+
+      - echo "Installing ALL project dependencies (including dev)..."
+      - npm install --production=false
 
   build:
     commands:
