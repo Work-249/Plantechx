@@ -25,3 +25,4 @@ artifacts:
     - server.js
     - server/**/*
   discard-paths: no
+
