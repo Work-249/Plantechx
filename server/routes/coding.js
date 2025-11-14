@@ -7,7 +7,7 @@ const CodingTestCase = require('../models/CodingTestCase');
 const TestCodingSection = require('../models/TestCodingSection');
 const CodingSubmission = require('../models/CodingSubmission');
 const PracticeCodingProgress = require('../models/PracticeCodingProgress');
-const { VM } = require('vm2');
+const ivm = require('isolated-vm');
 
 router.get('/questions', authenticateToken, async (req, res) => {
   try {
@@ -443,41 +443,51 @@ async function runCodeInSandbox(code, language, input) {
 
     try {
       if (language === 'javascript') {
+        const isolate = new ivm.Isolate({ memoryLimit: 128 });
+        const context = await isolate.createContext();
+
+        const jail = context.global;
+        await jail.set('global', jail.derefInto());
+
         const outputLogs = [];
-        
-        const vm = new VM({
-          timeout: timeout,
-          sandbox: {
-            console: {
-              log: (...args) => {
-                outputLogs.push(args.map(a => String(a)).join(' '));
-              }
-            }
-          }
-        });
+        await jail.set('_consoleLog', new ivm.Reference(function(...args) {
+          outputLogs.push(args.map(a => String(a)).join(' '));
+        }));
 
         const inputLines = input.split('\n');
-        let inputIndex = 0;
+        await jail.set('_inputLines', JSON.stringify(inputLines));
+        await jail.set('_inputIndex', 0);
 
         const wrappedCode = `
-          const inputLines = ${JSON.stringify(inputLines)};
-          let inputIndex = 0;
+          let _inputLines = JSON.parse(_inputLines);
+          let _inputIndex = 0;
+
+          const console = {
+            log: (...args) => _consoleLog.applySync(undefined, args)
+          };
 
           const readline = () => {
-            if (inputIndex < inputLines.length) {
-              return inputLines[inputIndex++];
+            if (_inputIndex < _inputLines.length) {
+              return _inputLines[_inputIndex++];
             }
             return '';
           };
 
           ${code}
+
+          // Capture console output
+          '';
         `;
 
         try {
-          vm.run(wrappedCode);
+          const script = await isolate.compileScript(wrappedCode);
+          await script.run(context, { timeout });
+
           const output = outputLogs.join('\n');
+          isolate.dispose();
           resolve(output);
         } catch (error) {
+          isolate.dispose();
           reject(new Error(`Runtime Error: ${error.message}`));
         }
       } else if (language === 'python') {
