@@ -1,62 +1,28 @@
-service: plantechx-backend
+service: my-express-service
 
 frameworkVersion: '3'
 
 provider:
   name: aws
-  runtime: nodejs18.x
-  region: ap-south-1
-  memorySize: 512
-  timeout: 30
-  stage: prod
+  stage: ${opt:stage, 'dev'}
+  region: ${env:AWS_REGION, 'ap-south-1'}
+  runtime: nodejs20.x
   environment:
-    NODE_ENV: ${env:NODE_ENV, 'production'}
-    PORT: ${env:PORT, '5000'}
-    MONGODB_URI: ${env:MONGODB_URI}
-    JWT_SECRET: ${env:JWT_SECRET}
-    JWT_EXPIRES_IN: ${env:JWT_EXPIRES_IN}
-    EMAIL_HOST: ${env:EMAIL_HOST}
-    EMAIL_PORT: ${env:EMAIL_PORT}
-    EMAIL_USER: ${env:EMAIL_USER}
-    EMAIL_PASS: ${env:EMAIL_PASS}
-    FRONTEND_URL: ${env:FRONTEND_URL}
-    AWS_S3_BUCKET: ${env:AWS_S3_BUCKET}
-    AWS_REGION: ${env:AWS_REGION}
+    NODE_ENV: ${opt:stage, 'dev'}
+  lambdaHashingVersion: 20201221
 
 functions:
-  app:
-    handler: server.handler
+  api:
+    handler: handler.lambdaHandler
     events:
-      - httpApi:
+      - httpApi:            # uses API Gateway HTTP API (v2). For REST API v1 use 'http'
           path: /{proxy+}
           method: ANY
 
 plugins:
-  - serverless-http
-  - serverless-offline
-  - serverless-dotenv-plugin
-  - serverless-plugin-tracing
+  - serverless-offline   # optional for local dev
 
 package:
-  individually: false
-  patterns:
-    - '!.git/**'
-    - '!.vscode/**'
-    - '!coverage/**'
-    - '!README.md'
-    - '!.env'
-    - '!.env.example'
-    - '!.gitignore'
-    - '!.eslintrc*'
-    - '!jest.config.js'
-    - '!test/**'
-    - '!node_modules/aws-sdk/**'
-  include:
-    - 'node_modules/**'
-    - 'server.js'
-    - 'server/**'
-    - 'config/**'
-    - 'middleware/**'
-    - 'models/**'
-    - 'routes/**'
-    - 'utils/**'
+  exclude:
+    - node_modules/**
+    - .git/**
