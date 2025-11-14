@@ -5,18 +5,20 @@ phases:
     runtime-versions:
       nodejs: 22
     commands:
+      - cd backend
       - echo "Installing Serverless v3 globally..."
       - npm install -g serverless@3
 
-      - echo "Installing ALL project dependencies (including dev)..."
+      - echo "Installing ALL project dependencies..."
       - npm install --production=false
 
   build:
     commands:
-      - echo "Packaging with Serverless v3..."
+      - cd backend
+      - echo "Packaging with Serverless..."
       - serverless package
 
 artifacts:
   files:
-    - .serverless/**/*
+    - server/.serverless/**/*
   name: serverless-artifacts
