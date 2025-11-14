@@ -11,7 +11,7 @@ provider:
 
 functions:
   api:
-    handler: src/handler.handler
+     handler: index.handler
     events:
       - httpApi:
           path: /{proxy+}
