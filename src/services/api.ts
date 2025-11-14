@@ -1,4 +1,4 @@
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://d5xy2i4xt6.execute-api.ap-south-1.amazonaws.com';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://d5xy2i4xt6.execute-api.ap-south-1.amazonaws.com/prod/api';
 class ApiService {
   private getHeaders(includeAuth = true): HeadersInit {
     const headers: HeadersInit = {
