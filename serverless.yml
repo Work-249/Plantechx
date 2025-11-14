@@ -1,22 +1,35 @@
-service: my-backend
+service: my-backend-api
+frameworkVersion: "3"
 
 provider:
   name: aws
   runtime: nodejs18.x
-  region: us-east-1
+  region: ap-south-1
   stage: dev
-  environment:
-    NODE_ENV: ${opt:stage, 'dev'}
-  iamRoleStatements:
-    - Effect: Allow
-      Action:
-        - dynamodb:*
-      Resource: "*"   # tighten in prod
+  timeout: 10
+  memorySize: 256
 
 functions:
   api:
-    handler: handler.main
+    handler: src/handler.handler
     events:
-      - http:
+      - httpApi:
           path: /{proxy+}
-          method: any
+          method: ANY
+
+plugins:
+  - serverless-offline
+  - serverless-webpack
+
+package:
+  individually: true
+  exclude:
+    - node_modules/**
+    - .git/**
+    - .vscode/**
+    - test/**
+    
+custom:
+  webpack:
+    webpackConfig: ./webpack.config.js
+    includeModules: true
