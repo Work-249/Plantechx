@@ -2,29 +2,27 @@ version: 0.2
 
 env:
   variables:
-    STAGE: "dev"                      # change per pipeline stage if you want
-    AWS_REGION: "ap-south-1"          # change to your preferred region
-
+    SLS_DEBUG: "false"
 phases:
   install:
-    runtime-versions:
-      nodejs: 20
     commands:
-      - echo "Installing dependencies..."
+      - echo "Install deps & Serverless"
       - npm ci
-      - echo "Ensure Serverless CLI is available..."
-      - npx --no-install serverless --version || npm install -g serverless
+      - npm install -g serverless
+      - serverless --version
   pre_build:
     commands:
-      - echo "Pre-build: show AWS identity"
-      - aws sts get-caller-identity
+      - echo "Configure AWS credentials (provided by CodeBuild service role)"
   build:
     commands:
-      - echo "Running tests (if any)..."
-      - npm run test || true
-      - echo "Deploying via Serverless Framework"
-      - npx serverless deploy --stage $STAGE --region $AWS_REGION --verbose
+      - echo "Running tests (if any)"
+      - npm test || true
+      - echo "Packaging & deploying with Serverless"
+      - serverless deploy --stage $SLS_STAGE --verbose
+  post_build:
+    commands:
+      - echo "Build completed on `date`"
 artifacts:
   files:
     - '**/*'
-  discard-paths: no
+  discard-paths: yes
