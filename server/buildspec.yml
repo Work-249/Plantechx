@@ -10,10 +10,7 @@ phases:
 
   build:
     commands:
-      - echo "Switching into serverless directory..."
-      - cd serverless
-
-      - echo "Installing all dependencies in serverless folder..."
+      - echo "Installing all dependencies..."
       - npm install --production=false
 
       - echo "Packaging with Serverless..."
@@ -21,5 +18,5 @@ phases:
 
 artifacts:
   files:
-    - serverless/.serverless/**/*
+    - .serverless/**/*
   name: serverless-artifacts
