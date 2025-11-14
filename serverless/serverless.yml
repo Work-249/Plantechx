@@ -11,7 +11,7 @@ provider:
 
 functions:
   api:
-     handler: index.handler
+    handler: index.handler
     events:
       - httpApi:
           path: /{proxy+}
@@ -24,7 +24,7 @@ package:
     - .git/**
     - .vscode/**
     - test/**
-    
+
 custom:
   webpack:
     webpackConfig: ./webpack.config.js
