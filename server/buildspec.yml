@@ -5,7 +5,10 @@ phases:
     runtime-versions:
       nodejs: 18
     commands:
-      - echo " Installing project dependencies..."
+      - echo "🔧 Installing Serverless CLI globally..."
+      - npm install -g serverless@3
+      - serverless --version
+      - echo "📦 Installing project dependencies..."
       - npm install
   pre_build:
     commands:
@@ -14,7 +17,7 @@ phases:
   build:
     commands:
       - echo "🚀 Deploying backend to AWS Lambda using Serverless..."
-      - npx serverless deploy --stage prod --region ap-south-1 --verbose
+      - serverless deploy --stage prod --region ap-south-1 --verbose
 artifacts:
   files:
     - serverless.yml
