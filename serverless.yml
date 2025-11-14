@@ -1,28 +1,22 @@
-service: my-express-service
-
-frameworkVersion: '3'
+service: my-backend
 
 provider:
   name: aws
-  stage: ${opt:stage, 'dev'}
-  region: ${env:AWS_REGION, 'ap-south-1'}
-  runtime: nodejs20.x
+  runtime: nodejs18.x
+  region: us-east-1
+  stage: dev
   environment:
     NODE_ENV: ${opt:stage, 'dev'}
-  lambdaHashingVersion: 20201221
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+      Resource: "*"   # tighten in prod
 
 functions:
   api:
-    handler: handler.lambdaHandler
+    handler: handler.main
     events:
-      - httpApi:            # uses API Gateway HTTP API (v2). For REST API v1 use 'http'
+      - http:
           path: /{proxy+}
-          method: ANY
-
-plugins:
-  - serverless-offline   # optional for local dev
-
-package:
-  exclude:
-    - node_modules/**
-    - .git/**
+          method: any
