@@ -3,19 +3,20 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      nodejs: 22
+      nodejs: 18
     commands:
-      - echo "Installing Serverless v4..."
-      - npm install -g serverless@4
+      - echo "Installing Serverless v3..."
+      - npm install -g serverless@3
+      - serverless --version
       - echo "Installing project dependencies..."
       - npm install
 
   build:
     commands:
-      - echo "Packaging with Serverless v4..."
+      - echo "Packaging with Serverless v3..."
       - serverless package
 
 artifacts:
   files:
-    - .serverless//*
+    - .serverless/**/*
   name: serverless-artifacts
