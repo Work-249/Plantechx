@@ -1,28 +1,21 @@
 version: 0.2
 
-env:
-  variables:
-    SLS_DEBUG: "false"
 phases:
   install:
+    runtime-versions:
+      nodejs: 22
     commands:
-      - echo "Install deps & Serverless"
-      - npm ci
-      - npm install -g serverless
-      - serverless --version
-  pre_build:
-    commands:
-      - echo "Configure AWS credentials (provided by CodeBuild service role)"
+      - echo "Installing Serverless v4..."
+      - npm install -g serverless@4
+      - echo "Installing project dependencies..."
+      - npm install
+
   build:
     commands:
-      - echo "Running tests (if any)"
-      - npm test || true
-      - echo "Packaging & deploying with Serverless"
-      - serverless deploy --stage $SLS_STAGE --verbose
-  post_build:
-    commands:
-      - echo "Build completed on `date`"
+      - echo "Packaging with Serverless v4..."
+      - serverless package
+
 artifacts:
   files:
-    - '**/*'
-  discard-paths: yes
+    - .serverless//*
+  name: serverless-artifacts
