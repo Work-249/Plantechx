@@ -50,10 +50,18 @@ custom:
 
 package:
   individually: false
+  excludeDevDependencies: true
   patterns:
     - '!node_modules/**'
     - '!test/**'
+    - '!tests/**'
     - '!.git/**'
     - '!.vscode/**'
     - '!*.test.js'
+    - '!*.spec.js'
     - '!*.md'
+    - '!logs/**'
+    - '!uploads/**'
+    - '!coverage/**'
+    - '!webpack.config.js'
+    - '!buildspec.yml'
