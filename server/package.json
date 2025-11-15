@@ -4,8 +4,8 @@
   "description": "Backend for Academic Management System",
   "main": "server.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js",
+    "start": "node index.mjs",
+    "dev": "nodemon index.mjs",
     "test": "mocha --exit"
   },
   "dependencies": {
