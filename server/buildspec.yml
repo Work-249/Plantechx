@@ -19,7 +19,6 @@ phases:
       - "npm install --production=false"
       - "echo Packaging with Serverless..."
       - "serverless package"
-      - "zip -r ../../my-backend-api.zip *"
 
 artifacts:
   base-directory: server
