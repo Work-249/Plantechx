@@ -110,27 +110,25 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Create HTTP server for Socket.IO
+// Create HTTP server (used when running locally)
 const server = http.createServer(app);
 
-// Socket.IO for real-time updates
-const { Server } = require('socket.io');
-const io = new Server(server, {
-  cors: {
-    origin: allowedOrigins,
-    methods: ['GET', 'POST']
-  }
+// NOTE: Socket.IO removed — using AWS WebSocket API or other mechanism is recommended for production.
+// Periodically calculate active student count and publish via a pluggable publisher.
+const User = require('./models/User');
+// pluggable publisher; if you later add a publish utility (e.g., to API Gateway Management API), set this function.
+const publishActivityUpdate = global.publishActivityUpdate || (async (payload) => {
+  // Default: just log the activity update when no real-time system is configured
+  console.log('activity:update', payload);
 });
 
-// Periodically emit active student count
-const User = require('./models/User');
 const emitActiveCounts = async () => {
   try {
     const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
     const activeStudents = await User.countDocuments({ role: 'student', lastLogin: { $gte: fifteenMinutesAgo } });
-    io.emit('activity:update', { activeStudents });
+    await publishActivityUpdate({ activeStudents });
   } catch (err) {
-    logger.errorLog(err, { context: 'Failed to emit active counts' });
+    logger.errorLog(err, { context: 'Failed to compute active counts' });
   }
 };
 setInterval(emitActiveCounts, 15 * 1000);
