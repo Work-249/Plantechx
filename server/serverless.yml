@@ -40,7 +40,6 @@ functions:
 package:
   individually: false
   exclude:
-    - node_modules/**
     - .git/**
     - .vscode/**
     - test/**
