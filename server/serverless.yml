@@ -38,7 +38,7 @@ functions:
           method: ANY
 
 package:
-  individually: true
+  individually: false
   exclude:
     - node_modules/**
     - .git/**
