@@ -2,10 +2,10 @@
   "name": "academic-management-backend",
   "version": "1.0.0",
   "description": "Backend for Academic Management System",
-  "main": "server.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node index.mjs",
-    "dev": "nodemon index.mjs",
+    "start": "node index.js",
+    "dev": "nodemon index.js",
     "test": "mocha --exit"
   },
   "dependencies": {
