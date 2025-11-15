@@ -10,7 +10,6 @@ phases:
       - "ls -la"
       - "echo -> changing into server/ directory"
       - "cd server"
-
       - "echo Installing Serverless v3..."
       - "npm install -g serverless@3"
 
@@ -18,16 +17,11 @@ phases:
     commands:
       - "echo Installing all dependencies..."
       - "npm install --production=false"
-
       - "echo Packaging with Serverless..."
       - "serverless package"
 
 artifacts:
   base-directory: server
   files:
-    - .serverless//*
+    - ".serverless/**/*"
   name: serverless-artifacts
-
-cache:
-  paths:
-    - "server/node_modules/**/*"
