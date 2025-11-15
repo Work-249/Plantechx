@@ -6,8 +6,8 @@ provider:
   runtime: nodejs20.x
   region: ap-south-1
   stage: prod
-  timeout: 10
-  memorySize: 256
+  timeout: 30
+  memorySize: 512
 
   httpApi:
     cors:
@@ -31,21 +31,29 @@ provider:
 
 functions:
   api:
-    handler: my-backend-api/index.handler
+    handler: index.handler
     events:
       - httpApi:
           path: /{proxy+}
           method: ANY
 
-package:
-  individually: false
-  exclude:
-    - .node_modules/**
-    - .git/**
-    - .vscode/**
-    - test/**
+plugins:
+  - serverless-webpack
 
 custom:
   webpack:
     webpackConfig: ./webpack.config.js
-    includeModules: true
+    includeModules:
+      forceExclude:
+        - aws-sdk
+    packager: 'npm'
+
+package:
+  individually: false
+  patterns:
+    - '!node_modules/**'
+    - '!test/**'
+    - '!.git/**'
+    - '!.vscode/**'
+    - '!*.test.js'
+    - '!*.md'

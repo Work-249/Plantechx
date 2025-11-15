@@ -17,6 +17,10 @@ phases:
     commands:
       - "echo Installing all dependencies..."
       - "npm install --production=false"
+      - "echo Installing webpack dependencies..."
+      - "npm install --save-dev webpack-node-externals @babel/core @babel/preset-env babel-loader"
+      - "echo Increasing file descriptor limit..."
+      - "ulimit -n 65536 || true"
       - "echo Packaging with Serverless..."
       - "serverless package"
 
