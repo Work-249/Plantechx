@@ -5,6 +5,12 @@ phases:
     runtime-versions:
       nodejs: 22
     commands:
+      - echo "DEBUG: running from PWD:"
+      - pwd
+      - ls -la
+      - echo "-> changing into server/ directory"
+      - cd server
+
       - echo "Installing Serverless v3..."
       - npm install -g serverless@3
 
@@ -17,6 +23,11 @@ phases:
       - serverless package
 
 artifacts:
+  base-directory: server
   files:
     - .serverless/**/*
   name: serverless-artifacts
+
+cache:
+  paths:
+    - server/node_modules/**/*
