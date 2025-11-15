@@ -5,29 +5,29 @@ phases:
     runtime-versions:
       nodejs: 22
     commands:
-      - echo "DEBUG: running from PWD:"
-      - pwd
-      - ls -la
-      - echo "-> changing into server/ directory"
-      - cd server
+      - "echo DEBUG: running from PWD:"
+      - "pwd"
+      - "ls -la"
+      - "echo -> changing into server/ directory"
+      - "cd server"
 
-      - echo "Installing Serverless v3..."
-      - npm install -g serverless@3
+      - "echo Installing Serverless v3..."
+      - "npm install -g serverless@3"
 
   build:
     commands:
-      - echo "Installing all dependencies..."
-      - npm install --production=false
+      - "echo Installing all dependencies..."
+      - "npm install --production=false"
 
-      - echo "Packaging with Serverless..."
-      - serverless package
+      - "echo Packaging with Serverless..."
+      - "serverless package"
 
 artifacts:
   base-directory: server
   files:
-    - .serverless/**/*
+    - ".serverless/**/*"
   name: serverless-artifacts
 
 cache:
   paths:
-    - server/node_modules/**/*
+    - "server/node_modules/**/*"
