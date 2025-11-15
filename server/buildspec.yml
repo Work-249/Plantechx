@@ -25,7 +25,7 @@ phases:
 artifacts:
   base-directory: server
   files:
-    - ".serverless/**/*"
+    - .serverless//*
   name: serverless-artifacts
 
 cache:
