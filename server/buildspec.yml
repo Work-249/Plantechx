@@ -17,9 +17,10 @@ phases:
       - echo "Creating deployment package..."
       - zip -r deployment.zip . -x "node_modules/mocha/*" "node_modules/supertest/*" "node_modules/nodemon/*" ".git/*" ".env*"
       - echo "Uploading to S3..."
-      - aws s3 cp deployment.zip s3://my-lambda-deployments/my-backend-api-$(date +%s).zip
+      - TIMESTAMP=$(date +%s)
+      - aws s3 cp deployment.zip s3://plantechx-backend-bucket/my-backend-api-$TIMESTAMP.zip --region ap-south-1
       - echo "Deploying Lambda function..."
-      - aws lambda update-function-code --function-name my-backend-api --s3-bucket my-lambda-deployments --s3-key my-backend-api-$(date +%s).zip --region ap-south-1 || echo "Function may not exist yet, creating..."
+      - aws lambda update-function-code --function-name my-backend-api --s3-bucket plantechx-backend-bucket --s3-key my-backend-api-$TIMESTAMP.zip --region ap-south-1 2>/dev/null || echo "Function may not exist yet"
       - echo "Build and deployment complete!"
 
 artifacts:
