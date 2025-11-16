@@ -6,8 +6,7 @@ phases:
       - "echo Starting CodeBuild..."
       - "pwd"
       - "ls -la"
-      - "echo Installing Serverless Framework..."
-      - "npm install -g serverless@3"
+      - "echo Skipping global Serverless install; using project's local Serverless via npx"
 
   install:
     runtime-versions:
@@ -21,9 +20,9 @@ phases:
     commands:
       - "echo Installing dependencies..."
       - "ulimit -n 4096 || true"
-      - "npm ci --only=production"
-      - "echo Packaging with Serverless..."
-      - "serverless package --verbose"
+      - "npm ci"
+      - "echo Packaging with local Serverless (npx)..."
+      - "npx serverless package --verbose"
       - "echo Package contents:"
       - "ls -la .serverless/"
 
