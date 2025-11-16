@@ -18,8 +18,10 @@ phases:
       - cd server
       - echo "Current directory after cd"
       - pwd
-      - echo "Running npm ci..."
-      - npm ci
+      - echo "Listing files in server directory"
+      - ls -la
+      - echo "Running npm install..."
+      - npm install
 
   build:
     commands:
