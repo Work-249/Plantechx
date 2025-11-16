@@ -1,0 +1,30 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - "echo Starting CodeBuild..."
+      - "pwd"
+      - "ls -la"
+
+  install:
+    runtime-versions:
+      nodejs: 22
+    commands:
+      - "echo Installing Serverless Framework v3..."
+      - "npm install -g serverless@3"
+      - "cd server"
+      - "pwd"
+
+  build:
+    commands:
+      - "echo Installing server dependencies..."
+      - "npm install --production=false"
+      - "echo Packaging with Serverless..."
+      - "serverless package"
+
+artifacts:
+  base-directory: server
+  files:
+    - ".serverless/**/*"
+  name: serverless-artifacts
