@@ -39,8 +39,6 @@ phases:
       - pwd && find . -type f | wc -l
       - echo "Packaging with Serverless..."
       - serverless package --verbose
-      - echo "Checking AWS permissions for CloudFormation..."
-      - 'STACK_NAME="my-backend-api-prod" && aws cloudformation describe-stacks --stack-name "$STACK_NAME" >/dev/null 2>&1 || (echo "ERROR: cloudformation:DescribeStacks failed for stack $STACK_NAME. Ensure CodeBuild role has cloudformation:DescribeStacks." && exit 1)'
       - echo "Deploying to AWS..."
       - serverless deploy --verbose
 
