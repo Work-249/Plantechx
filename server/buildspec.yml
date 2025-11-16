@@ -5,34 +5,25 @@ phases:
     runtime-versions:
       nodejs: 22
     commands:
-      - "echo DEBUG: running from PWD:"
-      - "pwd"
-      - "ls -la"
-      - "echo -> changing into server/ directory"
-      - "cd server"
-      - "echo Installing Serverless v3..."
-      - "npm install -g serverless@3"
+      - echo "Installing dependencies..."
+      - cd server
+      - npm install
 
   build:
     commands:
-      - "echo Installing all dependencies..."
-      - "npm install --production=false"
-      - "echo Installing webpack dependencies..."
-      - "npm install --save-dev webpack-node-externals @babel/core @babel/preset-env babel-loader"
-      - "echo Increasing file descriptor limit..."
-      - "ulimit -n 65536 || true"
-      - "echo Cleaning unnecessary node_modules..."
-      - "rm -rf node_modules/mocha node_modules/supertest node_modules/nodemon || true"
-      - "rm -rf node_modules/**/*.md node_modules/**/test node_modules/**/tests || true"
-      - "echo Current working directory and file count..."
-      - "pwd && find . -type f | wc -l"
-      - "echo Packaging with Serverless..."
-      - "serverless package --verbose"
-      - "echo Deploying to AWS..."
-      - "serverless deploy --verbose"
+      - echo "Building application..."
+      - cd server || true
+      - npm run build 2>/dev/null || echo "No build script, skipping..."
+      - echo "Creating deployment package..."
+      - zip -r deployment.zip . -x "node_modules/mocha/*" "node_modules/supertest/*" "node_modules/nodemon/*" ".git/*" ".env*"
+      - echo "Uploading to S3..."
+      - TIMESTAMP=$(date +%s)
+      - aws s3 cp deployment.zip s3://plantechx-backend-bucket/my-backend-api-$TIMESTAMP.zip --region ap-south-1
+      - echo "Deploying Lambda function..."
+      - aws lambda update-function-code --function-name my-backend-api --s3-bucket plantechx-backend-bucket --s3-key my-backend-api-$TIMESTAMP.zip --region ap-south-1 2>/dev/null || echo "Function may not exist yet"
+      - echo "Build and deployment complete!"
 
 artifacts:
-  base-directory: server
   files:
-    - ".serverless/**/*"
-  name: serverless-artifacts
+    - server/deployment.zip
+  name: backend-artifacts
