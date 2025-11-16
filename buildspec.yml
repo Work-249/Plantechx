@@ -6,7 +6,9 @@ phases:
       - "echo Starting CodeBuild..."
       - "pwd"
       - "ls -la"
-      - "echo Skipping global Serverless install; using project's local Serverless via npx"
+      - "echo Installing Serverless Framework globally (v3.40.0)..."
+      - "npm install -g serverless@3.40.0"
+      - "export PATH=$(npm bin -g):$PATH"
 
   install:
     runtime-versions:
@@ -25,8 +27,8 @@ phases:
       - "pwd"
       - "ls -la"
       - "npm ci --no-audit --no-fund"
-      - "echo Packaging with local Serverless (npx)..."
-      - "npx serverless package --verbose"
+      - "echo Packaging with global Serverless..."
+      - "serverless package --verbose"
       - "echo Package contents:"
       - "ls -la .serverless/"
 
