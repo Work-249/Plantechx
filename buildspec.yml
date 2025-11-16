@@ -20,7 +20,8 @@ phases:
   build:
     commands:
       - "echo Installing dependencies..."
-      - "npm install"
+      - "ulimit -n 4096 || true"
+      - "npm ci --only=production"
       - "echo Packaging with Serverless..."
       - "serverless package --verbose"
       - "echo Package contents:"
