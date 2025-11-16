@@ -2,7 +2,7 @@ service: my-backend-api
 frameworkVersion: "3"
 
 plugins:
-  - serverless-webpack
+  - serverless-esbuild
 
 provider:
   name: aws
@@ -52,7 +52,18 @@ package:
     - 'routes/**'
     - 'middleware/**'
     - 'utils/**'
-    # Let webpack bundle dependencies into a single artifact; do not include full node_modules here.
+    # Let esbuild bundle dependencies into a single artifact; do not include full node_modules here.
+
+custom:
+  esbuild:
+    bundle: true
+    minify: false
+    sourcemap: false
+    target: 'node20'
+    platform: 'node'
+    external:
+      - aws-sdk
+    keepNames: true
     - '!test/**'
     - '!tests/**'
     - '!.git/**'
