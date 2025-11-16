@@ -20,7 +20,11 @@ phases:
     commands:
       - "echo Installing dependencies..."
       - "ulimit -n 4096 || true"
-      - "npm ci"
+      - "echo Ensuring build runs in server/"
+      - "cd server"
+      - "pwd"
+      - "ls -la"
+      - "npm ci --no-audit --no-fund"
       - "echo Packaging with local Serverless (npx)..."
       - "npx serverless package --verbose"
       - "echo Package contents:"
