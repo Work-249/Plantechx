@@ -46,13 +46,25 @@ package:
   individually: false
   excludeDevDependencies: true
   patterns:
-    - 'index.js'
-    - 'config/**'
-    - 'models/**'
-    - 'routes/**'
-    - 'middleware/**'
-    - 'utils/**'
-    # Let esbuild bundle dependencies into a single artifact; do not include full node_modules here.
+    - "index.js"
+    - "config/**"
+    - "models/**"
+    - "routes/**"
+    - "middleware/**"
+    - "utils/**"
+    - "!test/**"
+    - "!tests/**"
+    - "!.git/**"
+    - "!.vscode/**"
+    - "!*.test.js"
+    - "!*.spec.js"
+    - "!*.md"
+    - "!logs/**"
+    - "!uploads/**"
+    - "!coverage/**"
+    - "!webpack.config.js"
+    - "!buildspec.yml"
+    - "!.env"
 
 custom:
   esbuild:
@@ -64,16 +76,3 @@ custom:
     external:
       - aws-sdk
     keepNames: true
-    - '!test/**'
-    - '!tests/**'
-    - '!.git/**'
-    - '!.vscode/**'
-    - '!*.test.js'
-    - '!*.spec.js'
-    - '!*.md'
-    - '!logs/**'
-    - '!uploads/**'
-    - '!coverage/**'
-    - '!webpack.config.js'
-    - '!buildspec.yml'
-    - '!.env'
