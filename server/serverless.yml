@@ -33,7 +33,7 @@ provider:
 
 functions:
   api:
-    handler: server/index.handler
+    handler: index.handler
     events:
       - httpApi:
           path: /{proxy+}
@@ -50,7 +50,8 @@ package:
     - 'middleware/**'
     - 'utils/**'
     - 'node_modules/**'
-    - '!node_modules/aws-sdk/**'
+    # Do not include full node_modules tree — Serverless will include production deps when packaging.
+    # Avoid including all node_modules here to prevent too-many-open-files (EMFILE) during packaging.
     - '!test/**'
     - '!tests/**'
     - '!.git/**'
