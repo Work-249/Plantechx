@@ -7,7 +7,7 @@ phases:
       - "pwd"
       - "ls -la"
       - "echo Installing Serverless Framework globally (v3.40.0)..."
-      - "npm install -g serverless@3.40.0"
+      - "npm install -g serverless@3"
       - "export PATH=$(npm bin -g):$PATH"
 
   install:
