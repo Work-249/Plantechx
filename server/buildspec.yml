@@ -5,51 +5,48 @@ phases:
     runtime-versions:
       nodejs: 22
     commands:
-      - echo DEBUG: starting install phase - PWD:
+      - echo "DEBUG: starting install phase - PWD:"
       - pwd
       - ls -la
-      - echo -> changing into server/ directory
+      - echo "→ changing into server/ directory"
       - cd server
-      - echo Installing Serverless v3 globally...
+      - echo "Installing Serverless v3 globally..."
       - npm install -g serverless@3
-      - echo Using npm ci for reproducible installs
+      - echo "Running npm ci..."
       - npm ci
 
   build:
     commands:
-      - echo Entering server directory again to be safe...
+      - echo "Entering server directory again to be safe..."
       - cd server || true
-      - echo Installing build-only dev dependencies (webpack, babel)...
+      - echo "Installing webpack/babel build deps..."
       - npm install --no-audit --no-fund --save-dev webpack-node-externals @babel/core @babel/preset-env babel-loader
-      - echo Increasing file descriptor limit...
+      - echo "Increasing file descriptor limit..."
       - ulimit -n 65536 || true
-      - echo Cleaning unnecessary node_modules...
+      - echo "Cleaning unnecessary node_modules..."
       - rm -rf node_modules/mocha node_modules/supertest node_modules/nodemon || true
       - rm -rf node_modules/**/*.md node_modules/**/test node_modules/**/tests || true
-      - echo Current working directory and file count...
+      - echo "File count:"
       - pwd && find . -type f | wc -l
 
-      - echo Packaging with Serverless (creates .serverless artifacts)...
+      - echo "Packaging with Serverless..."
       - serverless package --verbose
 
-      - echo Checking AWS permissions for CodeBuild role (cloudformation:DescribeStacks)...
+      - echo "Checking AWS permissions for CloudFormation..."
       - STACK_NAME="my-backend-api-prod"
       - |
         if aws cloudformation describe-stacks --stack-name "$STACK_NAME" >/dev/null 2>&1; then
-          echo "cloudformation:DescribeStacks succeeded - continuing to deploy."
+          echo "CloudFormation permission OK."
         else
-          echo "ERROR: cloudformation:DescribeStacks failed. The CodeBuild service role likely lacks permission to call CloudFormation DescribeStacks."
-          echo "Quick fix (example):"
-          echo "  aws iam attach-role-policy --role-name codebuild-plantechxbuild-service-role --policy-arn arn:aws:iam::aws:policy/AWSCloudFormationFullAccess"
-          echo "Or add a least-privilege inline policy allowing cloudformation:DescribeStacks on arn:aws:cloudformation:ap-south-1:141113059735:stack/${STACK_NAME}/*"
+          echo "ERROR: cloudformation:DescribeStacks FAILED."
           exit 1
         fi
 
-      - echo Deploying to AWS (only after permission check)...
+      - echo "Deploying to AWS..."
       - serverless deploy --verbose
 
 artifacts:
   base-directory: server
   files:
-    - ".serverless/**/*"
+    - .serverless/**/*
   name: serverless-artifacts
