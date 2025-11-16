@@ -3,9 +3,9 @@ version: 0.2
 phases:
   pre_build:
     commands:
-      - echo "Installing Node.js 22..."
-      - curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
-      - apt-get install -y nodejs
+      - echo "Pre-build phase starting..."
+      - node --version
+      - npm --version
       - echo "Installing Serverless v3 globally..."
       - npm install -g serverless@3
 
