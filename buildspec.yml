@@ -6,7 +6,7 @@ phases:
       - "echo Starting CodeBuild..."
       - "pwd"
       - "ls -la"
-      - "echo Installing Serverless Framework globally (v3.40.0)..."
+      - "echo Installing Serverless v3..."
       - "npm install -g serverless@3"
       - "export PATH=$(npm bin -g):$PATH"
 
