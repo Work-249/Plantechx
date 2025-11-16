@@ -20,9 +20,7 @@ phases:
       - TIMESTAMP=$(date +%s)
       - aws s3 cp deployment.zip s3://plantechx-backend-bucket/my-backend-api-$TIMESTAMP.zip --region ap-south-1
       - echo "Deploying Lambda function..."
-      - TIMESTAMP=$(date +%s)
-      - S3_KEY="my-backend-api-$TIMESTAMP.zip"
-      - aws lambda update-function-code --function-name my-backend-api --s3-bucket plantechx-backend-bucket --s3-key $S3_KEY --region ap-south-1 2>/dev/null || aws lambda create-function --function-name my-backend-api --runtime nodejs22.x --role arn:aws:iam::141113059735:role/lambda-execution-role --handler index.handler --s3-bucket plantechx-backend-bucket --s3-key $S3_KEY --region ap-south-1
+      - aws lambda update-function-code --function-name my-backend-api --s3-bucket plantechx-backend-bucket --s3-key my-backend-api-$TIMESTAMP.zip --region ap-south-1 2>/dev/null || echo "Function may not exist yet"
       - echo "Build and deployment complete!"
 
 artifacts:
