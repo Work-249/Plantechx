@@ -5,7 +5,7 @@ phases:
     runtime-versions:
       nodejs: 22
     commands:
-      - echo "DEBUG: starting install phase - PWD:"
+      - echo "DEBUG starting install phase PWD"
       - pwd
       - ls -la
       - echo "→ changing into server/ directory"
