@@ -15,7 +15,8 @@ phases:
       nodejs: 20
     commands:
       - "echo Navigating to server directory..."
-      - "if [ -d server ]; then cd server; else echo 'ERROR: server directory not found in source. Current listing:'; ls -la; exit 1; fi"
+      - "# If we're already inside server, keep it; otherwise cd into server if it exists"
+      - "if [ \"$(basename \"$PWD\")\" = \"server\" ]; then echo 'Already in server: '$PWD; elif [ -d server ]; then cd server; else echo 'ERROR: server directory not found in source. Current listing:'; ls -la; exit 1; fi"
       - "pwd"
 
   build:
@@ -23,7 +24,7 @@ phases:
       - "echo Installing dependencies..."
       - "ulimit -n 4096 || true"
       - "echo Ensuring build runs in server/"
-      - "if [ -d server ]; then cd server; else echo 'ERROR: server directory not found during build. Current listing:'; ls -la; exit 1; fi"
+      - "if [ \"$(basename \"$PWD\")\" = \"server\" ]; then echo 'Already in server: '$PWD; elif [ -d server ]; then cd server; else echo 'ERROR: server directory not found during build. Current listing:'; ls -la; exit 1; fi"
       - "pwd"
       - "ls -la"
       - "npm ci --no-audit --no-fund"
@@ -32,9 +33,9 @@ phases:
       - "echo Package contents:"
       - "ls -la .serverless/"
 
-post_build:
-  commands:
-    - "echo Build completed successfully"
+  post_build:
+    commands:
+      - "echo Build completed successfully"
 
 artifacts:
   base-directory: server/.serverless
