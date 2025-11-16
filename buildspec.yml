@@ -6,25 +6,32 @@ phases:
       - "echo Starting CodeBuild..."
       - "pwd"
       - "ls -la"
+      - "echo Installing Serverless Framework..."
+      - "npm install -g serverless@3"
 
   install:
     runtime-versions:
-      nodejs: 22
+      nodejs: 20
     commands:
-      - "echo Installing Serverless Framework v3..."
-      - "npm install -g serverless@3"
+      - "echo Navigating to server directory..."
       - "cd server"
       - "pwd"
 
   build:
     commands:
-      - "echo Installing server dependencies..."
-      - "npm install --production=false"
+      - "echo Installing dependencies..."
+      - "npm install"
       - "echo Packaging with Serverless..."
-      - "serverless package"
+      - "serverless package --verbose"
+      - "echo Package contents:"
+      - "ls -la .serverless/"
+
+post_build:
+  commands:
+    - "echo Build completed successfully"
 
 artifacts:
-  base-directory: server
+  base-directory: server/.serverless
   files:
-    - ".serverless/**/*"
+    - '**/*'
   name: serverless-artifacts
