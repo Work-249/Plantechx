@@ -1,6 +1,9 @@
 service: my-backend-api
 frameworkVersion: "3"
 
+plugins:
+  - serverless-webpack
+
 provider:
   name: aws
   runtime: nodejs20.x
@@ -49,9 +52,7 @@ package:
     - 'routes/**'
     - 'middleware/**'
     - 'utils/**'
-    - 'node_modules/**'
-    # Do not include full node_modules tree — Serverless will include production deps when packaging.
-    # Avoid including all node_modules here to prevent too-many-open-files (EMFILE) during packaging.
+    # Let webpack bundle dependencies into a single artifact; do not include full node_modules here.
     - '!test/**'
     - '!tests/**'
     - '!.git/**'
