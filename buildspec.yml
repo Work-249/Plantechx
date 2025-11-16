@@ -3,40 +3,34 @@ version: 0.2
 phases:
   pre_build:
     commands:
-      - "echo Starting CodeBuild..."
-      - "pwd"
-      - "ls -la"
-      - "echo Installing Serverless v3..."
-      - "npm install -g serverless@3"
-      - "export PATH=$(npm bin -g):$PATH"
+      - echo "Starting CodeBuild..."
+      - pwd
+      - ls -la
+      - echo "Installing Serverless v3 globally..."
+      - npm install -g serverless@3
+      - export PATH=$(npm bin -g):$PATH
 
   install:
     runtime-versions:
       nodejs: 20
     commands:
-      - "echo Navigating to server directory..."
-      - "# If we're already inside server, keep it; otherwise cd into server if it exists"
-      - "if [ \"$(basename \"$PWD\")\" = \"server\" ]; then echo 'Already in server: '$PWD; elif [ -d server ]; then cd server; else echo 'ERROR: server directory not found in source. Current listing:'; ls -la; exit 1; fi"
-      - "pwd"
+      - echo "Switching into server directory..."
+      - cd server
+      - pwd
+      - ls -la
 
   build:
     commands:
-      - "echo Installing dependencies..."
-      - "ulimit -n 4096 || true"
-      - "echo Ensuring build runs in server/"
-      - "if [ \"$(basename \"$PWD\")\" = \"server\" ]; then echo 'Already in server: '$PWD; elif [ -d server ]; then cd server; else echo 'ERROR: server directory not found during build. Current listing:'; ls -la; exit 1; fi"
-      - "pwd"
-      - "ls -la"
-      - "# Prefer deterministic install with npm ci; if lockfile is out of sync, fall back to npm install and warn"
-      - "npm ci --no-audit --no-fund || (echo 'npm ci failed — falling back to npm install (this may update the lockfile). Recommend running \"npm install\" locally and committing package-lock.json.' && npm install --no-audit --no-fund)"
-      - "echo Packaging with global Serverless..."
-      - "serverless package --verbose"
-      - "echo Package contents:"
-      - "ls -la .serverless/"
+      - echo "Installing dependencies..."
+      - npm ci --no-audit --no-fund || npm install --no-audit --no-fund
+      - echo "Packaging and Deploying using Serverless..."
+      - serverless deploy --stage prod --verbose
 
   post_build:
     commands:
-      - "echo Build completed successfully"
+      - echo "Deployment completed successfully."
+      - echo "Listing deployed artifacts..."
+      - ls -la .serverless/
 
 artifacts:
   base-directory: server/.serverless
