@@ -15,7 +15,7 @@ phases:
       nodejs: 20
     commands:
       - "echo Navigating to server directory..."
-      - "cd server"
+      - "if [ -d server ]; then cd server; else echo 'ERROR: server directory not found in source. Current listing:'; ls -la; exit 1; fi"
       - "pwd"
 
   build:
@@ -23,7 +23,7 @@ phases:
       - "echo Installing dependencies..."
       - "ulimit -n 4096 || true"
       - "echo Ensuring build runs in server/"
-      - "cd server"
+      - "if [ -d server ]; then cd server; else echo 'ERROR: server directory not found during build. Current listing:'; ls -la; exit 1; fi"
       - "pwd"
       - "ls -la"
       - "npm ci --no-audit --no-fund"
