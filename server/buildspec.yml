@@ -5,25 +5,23 @@ phases:
     runtime-versions:
       nodejs: 22
     commands:
-      - echo "Installing dependencies..."
-      - cd server
-      - npm install
+      - "echo DEBUG: running from PWD:"
+      - "pwd"
+      - "ls -la"
+      - "echo -> changing into server/ directory"
+      - "cd server"
+      - "echo Installing Serverless v3..."
+      - "npm install -g serverless@3"
 
   build:
     commands:
-      - echo "Building application..."
-      - cd server || true
-      - npm run build 2>/dev/null || echo "No build script, skipping..."
-      - echo "Creating deployment package..."
-      - zip -r deployment.zip . -x "node_modules/mocha/*" "node_modules/supertest/*" "node_modules/nodemon/*" ".git/*" ".env*"
-      - echo "Uploading to S3..."
-      - TIMESTAMP=$(date +%s)
-      - aws s3 cp deployment.zip s3://plantechx-backend-bucket/my-backend-api-$TIMESTAMP.zip --region ap-south-1
-      - echo "Deploying Lambda function..."
-      - aws lambda update-function-code --function-name my-backend-api --s3-bucket plantechx-backend-bucket --s3-key my-backend-api-$TIMESTAMP.zip --region ap-south-1 2>/dev/null || echo "Function may not exist yet"
-      - echo "Build and deployment complete!"
+      - "echo Installing all dependencies..."
+      - "npm install --production=false"
+      - "echo Packaging with Serverless..."
+      - "serverless package"
 
 artifacts:
+  base-directory: server
   files:
-    - server/deployment.zip
-  name: backend-artifacts
+    - ".serverless/**/*"
+  name: serverless-artifacts
