@@ -33,7 +33,7 @@ provider:
 
 functions:
   api:
-    handler: index.handler
+    handler: server/index.handler
     events:
       - httpApi:
           path: /{proxy+}
