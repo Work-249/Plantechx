@@ -1,23 +1,30 @@
 version: 0.2
 
 phases:
+  pre_build:
+    commands:
+      - echo "Installing Node.js 22..."
+      - curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+      - apt-get install -y nodejs
+      - echo "Installing Serverless v3 globally..."
+      - npm install -g serverless@3
+
   install:
-    runtime-versions:
-      nodejs: 22
     commands:
       - echo "DEBUG starting install phase PWD"
       - pwd
       - ls -la
-      - echo "→ changing into server/ directory"
+      - echo "Changing into server directory"
       - cd server
-      - echo "Installing Serverless v3 globally..."
-      - npm install -g serverless@3
+      - echo "Current directory after cd"
+      - pwd
       - echo "Running npm ci..."
       - npm ci
 
   build:
     commands:
-      - echo "Entering server directory again to be safe..."
+      - echo "Build phase starting..."
+      - pwd
       - cd server || true
       - echo "Installing webpack/babel build deps..."
       - npm install --no-audit --no-fund --save-dev webpack-node-externals @babel/core @babel/preset-env babel-loader
@@ -30,7 +37,7 @@ phases:
       - pwd && find . -type f | wc -l
       - echo "Packaging with Serverless..."
       - serverless package --verbose
-      - echo "Checking AWS permissions for CloudFormation (single-line command to avoid YAML block-mapping issues)..."
+      - echo "Checking AWS permissions for CloudFormation..."
       - 'STACK_NAME="my-backend-api-prod" && aws cloudformation describe-stacks --stack-name "$STACK_NAME" >/dev/null 2>&1 || (echo "ERROR: cloudformation:DescribeStacks failed for stack $STACK_NAME. Ensure CodeBuild role has cloudformation:DescribeStacks." && exit 1)'
       - echo "Deploying to AWS..."
       - serverless deploy --verbose
