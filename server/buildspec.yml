@@ -8,6 +8,8 @@ phases:
       - npm --version
       - echo "Installing Serverless v3 globally..."
       - npm install -g serverless@3
+      - echo "Configuring AWS credentials for Serverless..."
+      - serverless config credentials --provider aws --key $AWS_ACCESS_KEY_ID --secret $AWS_SECRET_ACCESS_KEY --region ap-south-1
 
   install:
     commands:
@@ -27,7 +29,6 @@ phases:
     commands:
       - echo "Build phase starting..."
       - pwd
-      - cd server || true
       - echo "Installing webpack/babel build deps..."
       - npm install --no-audit --no-fund --save-dev webpack-node-externals @babel/core @babel/preset-env babel-loader
       - echo "Increasing file descriptor limit..."
