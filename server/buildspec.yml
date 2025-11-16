@@ -28,6 +28,8 @@ phases:
       - "pwd && find . -type f | wc -l"
       - "echo Packaging with Serverless..."
       - "serverless package --verbose"
+      - "echo Deploying to AWS..."
+      - "serverless deploy --verbose"
 
 artifacts:
   base-directory: server
