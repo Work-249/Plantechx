@@ -46,3 +46,4 @@ artifacts:
   files:
     - .serverless/**/*
   name: serverless-artifacts
+  
