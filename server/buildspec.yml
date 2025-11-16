@@ -28,20 +28,10 @@ phases:
       - rm -rf node_modules/**/*.md node_modules/**/test node_modules/**/tests || true
       - echo "File count:"
       - pwd && find . -type f | wc -l
-
       - echo "Packaging with Serverless..."
       - serverless package --verbose
-
-      - echo "Checking AWS permissions for CloudFormation..."
-      - STACK_NAME="my-backend-api-prod"
-      - |
-        if aws cloudformation describe-stacks --stack-name "$STACK_NAME" >/dev/null 2>&1; then
-          echo "CloudFormation permission OK."
-        else
-          echo "ERROR: cloudformation:DescribeStacks FAILED."
-          exit 1
-        fi
-
+      - echo "Checking AWS permissions for CloudFormation (single-line command to avoid YAML block-mapping issues)..."
+      - 'STACK_NAME="my-backend-api-prod" && aws cloudformation describe-stacks --stack-name "$STACK_NAME" >/dev/null 2>&1 || (echo "ERROR: cloudformation:DescribeStacks failed for stack $STACK_NAME. Ensure CodeBuild role has cloudformation:DescribeStacks." && exit 1)'
       - echo "Deploying to AWS..."
       - serverless deploy --verbose
 
