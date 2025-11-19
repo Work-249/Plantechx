@@ -9,8 +9,13 @@ provider:
   timeout: 20
   memorySize: 512
   environment:
-    MONGO_URI: ${env:MONGO_URI}
+    MONGODB_URI: ${env:MONGODB_URI}
     JWT_SECRET: ${env:JWT_SECRET}
+    MASTER_ADMIN_EMAIL: ${env:MASTER_ADMIN_EMAIL}
+    MASTER_ADMIN_PASSWORD: ${env:MASTER_ADMIN_PASSWORD}
+    MASTER_ADMIN_NAME: ${env:MASTER_ADMIN_NAME}
+    NODE_ENV: ${env:NODE_ENV, 'production'}
+    FRONTEND_URL: ${env:FRONTEND_URL, 'https://main.daqm1aijotilg.amplifyapp.com'}
 
 functions:
   api:
