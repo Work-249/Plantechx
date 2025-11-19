@@ -7,9 +7,8 @@ const serverless = require('serverless-http');
 const http = require('http');
 require('dotenv').config();
 
-// Database connection
-const connectDB = require('./config/database');
-connectDB();
+// Initialize DynamoDB
+require('./config/dynamodb');
 
 // Logger middleware
 const logger = require('./middleware/logger');
@@ -64,9 +63,9 @@ app.use((req, res, next) => {
   next();
 });
 
-// Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/admin', require('./routes/admin'));
+// Routes (using DynamoDB)
+app.use('/api/auth', require('./routes/auth-dynamodb'));
+app.use('/api/admin', require('./routes/admin-dynamodb'));
 app.use('/api/settings', require('./routes/settings'));
 app.use('/api/college', require('./routes/college'));
 app.use('/api/tests', require('./routes/tests'));
@@ -115,7 +114,8 @@ const server = http.createServer(app);
 
 // NOTE: Socket.IO removed — using AWS WebSocket API or other mechanism is recommended for production.
 // Periodically calculate active student count and publish via a pluggable publisher.
-const User = require('./models/User');
+const { docClient, TABLES, ScanCommand } = require('./config/dynamodb');
+
 // pluggable publisher; if you later add a publish utility (e.g., to API Gateway Management API), set this function.
 const publishActivityUpdate = global.publishActivityUpdate || (async (payload) => {
   // Default: just log the activity update when no real-time system is configured
@@ -124,8 +124,23 @@ const publishActivityUpdate = global.publishActivityUpdate || (async (payload) =
 
 const emitActiveCounts = async () => {
   try {
-    const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
-    const activeStudents = await User.countDocuments({ role: 'student', lastLogin: { $gte: fifteenMinutesAgo } });
+    const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+
+    const scanParams = {
+      TableName: TABLES.USERS,
+      FilterExpression: '#role = :student AND lastLogin >= :time',
+      ExpressionAttributeNames: {
+        '#role': 'role'
+      },
+      ExpressionAttributeValues: {
+        ':student': 'student',
+        ':time': fifteenMinutesAgo
+      }
+    };
+
+    const result = await docClient.send(new ScanCommand(scanParams));
+    const activeStudents = result.Items ? result.Items.length : 0;
+
     await publishActivityUpdate({ activeStudents });
   } catch (err) {
     logger.errorLog(err, { context: 'Failed to compute active counts' });

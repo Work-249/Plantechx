@@ -9,13 +9,28 @@ provider:
   timeout: 20
   memorySize: 512
   environment:
-    MONGODB_URI: ${env:MONGODB_URI}
+    AWS_REGION: ap-south-1
     JWT_SECRET: ${env:JWT_SECRET}
-    MASTER_ADMIN_EMAIL: ${env:MASTER_ADMIN_EMAIL}
-    MASTER_ADMIN_PASSWORD: ${env:MASTER_ADMIN_PASSWORD}
-    MASTER_ADMIN_NAME: ${env:MASTER_ADMIN_NAME}
     NODE_ENV: ${env:NODE_ENV, 'production'}
     FRONTEND_URL: ${env:FRONTEND_URL, 'https://main.daqm1aijotilg.amplifyapp.com'}
+    DYNAMODB_USERS_TABLE: ${env:DYNAMODB_USERS_TABLE, 'AcademicManagement-Users'}
+    DYNAMODB_COLLEGES_TABLE: ${env:DYNAMODB_COLLEGES_TABLE, 'AcademicManagement-Colleges'}
+    DYNAMODB_TESTS_TABLE: ${env:DYNAMODB_TESTS_TABLE, 'AcademicManagement-Tests'}
+    DYNAMODB_TEST_ASSIGNMENTS_TABLE: ${env:DYNAMODB_TEST_ASSIGNMENTS_TABLE, 'AcademicManagement-TestAssignments'}
+    DYNAMODB_TEST_ATTEMPTS_TABLE: ${env:DYNAMODB_TEST_ATTEMPTS_TABLE, 'AcademicManagement-TestAttempts'}
+    DYNAMODB_CODING_QUESTIONS_TABLE: ${env:DYNAMODB_CODING_QUESTIONS_TABLE, 'AcademicManagement-CodingQuestions'}
+    DYNAMODB_SUBJECTS_TABLE: ${env:DYNAMODB_SUBJECTS_TABLE, 'AcademicManagement-Subjects'}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource:
+        - arn:aws:dynamodb:ap-south-1:*:table/AcademicManagement-*
 
 functions:
   api:
