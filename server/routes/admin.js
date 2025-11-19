@@ -1598,4 +1598,89 @@ router.post('/upload-image', auth, authorize('master_admin', 'faculty'), imageUp
   }
 });
 
+// Get all colleges (Master Admin only)
+router.get('/colleges', auth, authorize('master_admin'), async (req, res) => {
+  try {
+    const colleges = await College.find({ isActive: true })
+      .populate('adminId', 'name email hasLoggedIn lastLogin')
+      .sort({ createdAt: -1 });
+
+    const collegesWithStats = colleges.map(college => ({
+      id: college._id,
+      name: college.name,
+      code: college.code,
+      email: college.email,
+      address: college.address,
+      totalFaculty: college.totalFaculty || 0,
+      totalStudents: college.totalStudents || 0,
+      adminInfo: college.adminId ? {
+        name: college.adminId.name,
+        email: college.adminId.email,
+        hasLoggedIn: college.adminId.hasLoggedIn,
+        lastLogin: college.adminId.lastLogin
+      } : null,
+      createdAt: college.createdAt,
+      isActive: college.isActive
+    }));
+
+    res.json(collegesWithStats);
+  } catch (error) {
+    logger.errorLog(error, { context: 'Get colleges error' });
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Get admin statistics (Master Admin only)
+router.get('/stats', auth, authorize('master_admin'), async (req, res) => {
+  try {
+    const [
+      totalColleges,
+      totalFaculty,
+      totalStudents,
+      totalTests,
+      activeTests,
+      completedTests,
+      recentLogins
+    ] = await Promise.all([
+      College.countDocuments({ isActive: true }),
+      User.countDocuments({ role: 'faculty', isActive: true }),
+      User.countDocuments({ role: 'student', isActive: true }),
+      Test.countDocuments({ isActive: true }),
+      Test.countDocuments({
+        isActive: true,
+        startDateTime: { $lte: new Date() },
+        endDateTime: { $gte: new Date() }
+      }),
+      TestAttempt.countDocuments({ status: 'completed' }),
+      User.find({
+        role: { $in: ['college_admin', 'faculty', 'student'] },
+        lastLogin: { $exists: true }
+      })
+      .select('name email role lastLogin collegeId')
+      .populate('collegeId', 'name')
+      .sort({ lastLogin: -1 })
+      .limit(10)
+    ]);
+
+    res.json({
+      totalColleges,
+      totalFaculty,
+      totalStudents,
+      totalTests,
+      activeTests,
+      completedTests,
+      recentLogins: recentLogins.map(user => ({
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        lastLogin: user.lastLogin,
+        collegeId: user.collegeId
+      }))
+    });
+  } catch (error) {
+    logger.errorLog(error, { context: 'Get admin stats error' });
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 module.exports = router;
