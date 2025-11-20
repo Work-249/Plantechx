@@ -111,6 +111,13 @@ router.post('/users', auth, authorize('college_admin'), [
       college.name
     );
 
+    // Also print send result to plain console so developers see immediate feedback
+    try {
+      console.log(`[email] sendLoginCredentials result for ${email}:`, emailResult);
+    } catch (logErr) {
+      logger.errorLog(logErr, { context: 'Logging email send result' });
+    }
+
     if (!emailResult.success) {
       await PendingEmail.create({
         type: 'login_credentials',
