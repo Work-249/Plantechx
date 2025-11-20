@@ -1,5 +1,6 @@
 const nodemailer = require('nodemailer');
 const logger = require('../middleware/logger');
+const PendingEmail = require('../models/PendingEmail');
 
 class EmailService {
   constructor() {
@@ -52,6 +53,15 @@ class EmailService {
     }
   }
 
+  // Basic email validation to catch obvious malformed addresses
+  isValidEmail(email) {
+    if (!email || typeof email !== 'string') return false;
+    const trimmed = email.trim();
+    // Simple RFC-like regex that allows dots in local part
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(trimmed);
+  }
+
   async verifyConnection() {
     try {
       await this.transporter.verify();
@@ -65,7 +75,14 @@ class EmailService {
     }
   }
 
-  async sendWithRetry(mailOptions, retries = this.maxRetries) {
+  async sendWithRetry(mailOptions, meta = {}, retries = this.maxRetries) {
+    // Development/dev-shim: if EMAIL_FAKE is set, don't actually send email — simulate success.
+    if (process.env.EMAIL_FAKE === 'true') {
+      const fakeMessageId = `fake-${Date.now()}`;
+      console.log(`[email][FAKE] Simulated send to ${String(mailOptions.to || '')} (messageId=${fakeMessageId})`);
+      // Return a success-like object so callers behave as if email was sent
+      return { success: true, attempt: 0, messageId: fakeMessageId };
+    }
     if (!this.isConfigured) {
       logger.warn('Email service not configured - skipping email send', logger.sanitizeMeta(mailOptions));
       return {
@@ -76,23 +93,50 @@ class EmailService {
     }
 
     for (let attempt = 1; attempt <= retries; attempt++) {
+      // Plain console logging to make send attempts visible during development
       try {
-  const info = await this.transporter.sendMail(mailOptions);
-  logger.info('✓ Email sent successfully', Object.assign({}, logger.sanitizeMeta(mailOptions), { attempt, messageId: info.messageId }));
+        console.log(`[email] Sending to ${String(mailOptions.to || '')} (attempt ${attempt}/${retries})`);
+        const info = await this.transporter.sendMail(mailOptions);
+        logger.info('✓ Email sent successfully', Object.assign({}, logger.sanitizeMeta(mailOptions), { attempt, messageId: info.messageId }));
+        console.log(`[email] Sent ✓ to ${String(mailOptions.to || '')} (messageId=${info.messageId})`);
         return { success: true, attempt, messageId: info.messageId };
       } catch (error) {
-  logger.errorLog(error, Object.assign({ context: 'Email send attempt', attempt, maxRetries: retries, errorCode: error.code, command: error.command }, logger.sanitizeMeta(mailOptions)));
+        console.error(`[email] Error sending to ${String(mailOptions.to || '')} (attempt ${attempt}/${retries}):`, error && error.message ? error.message : error);
+        logger.errorLog(error, Object.assign({ context: 'Email send attempt', attempt, maxRetries: retries, errorCode: error && error.code, command: error && error.command }, logger.sanitizeMeta(mailOptions)));
 
         if (attempt < retries) {
           const delay = this.retryDelay * attempt;
+          console.log(`[email] Retrying in ${delay}ms...`);
           logger.info(`Retrying email send in ${delay}ms...`, { attempt: attempt + 1, maxRetries: retries });
           await new Promise(resolve => setTimeout(resolve, delay));
         } else {
+          // Persist failed email to PendingEmail collection (best-effort)
+          try {
+            const recipient = String(mailOptions.to || '').trim();
+            const recipientName = meta.recipientName || (meta.data && meta.data.recipientName) || recipient.split('@')[0];
+            await PendingEmail.create({
+              type: meta.type || (meta.data && meta.data.type) || 'notification',
+              recipientEmail: recipient,
+              recipientName: recipientName,
+              userId: meta.userId || undefined,
+              data: Object.assign({ subject: mailOptions.subject }, meta.data || {}, { html: mailOptions.html }),
+              status: 'failed',
+              attempts: retries,
+              lastAttemptAt: new Date(),
+              error: error && error.message ? error.message : String(error)
+            });
+            logger.info('Persisted failed email to PendingEmail', { to: logger.maskEmail(recipient), type: meta.type || 'notification' });
+            console.error(`[email] Persisted failed email for ${recipient}`);
+          } catch (persistErr) {
+            logger.errorLog(persistErr, { context: 'Persist failed email', to: logger.maskEmail(mailOptions.to) });
+            console.error(`[email] Failed to persist failed email for ${String(mailOptions.to || '')}:`, persistErr && persistErr.message ? persistErr.message : persistErr);
+          }
+
           return {
             success: false,
-            error: error.message,
+            error: error && error.message ? error.message : String(error),
             attempts: retries,
-            errorCode: error.code
+            errorCode: error && error.code
           };
         }
       }
@@ -110,9 +154,15 @@ class EmailService {
 
     const roleText = this.getRoleDisplayName(role);
     
+    const toAddress = String(userEmail || '').trim();
+    if (!this.isValidEmail(toAddress)) {
+      logger.errorLog(new Error('Invalid recipient email'), { context: 'Send Login Credentials - invalid email', to: logger.maskEmail(userEmail) });
+      return { success: false, error: 'Invalid recipient email' };
+    }
+
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      to: userEmail,
+      to: toAddress,
       subject: `Login Credentials - ${roleText} Account Created`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -148,7 +198,12 @@ class EmailService {
       `
     };
 
-    const result = await this.sendWithRetry(mailOptions);
+    const result = await this.sendWithRetry(mailOptions, {
+      type: 'login_credentials',
+      recipientName: userName,
+      userId: null,
+      data: { email: userEmail, password, role, collegeName }
+    });
 
     if (result.success) {
       return { success: true };
@@ -167,11 +222,17 @@ class EmailService {
   async sendPasswordReset(userEmail, userName, resetToken) {
   logger.info('Sending password reset email', { to: logger.maskEmail(userEmail) });
     
+    const toAddress = String(userEmail || '').trim();
+    if (!this.isValidEmail(toAddress)) {
+      logger.errorLog(new Error('Invalid recipient email'), { context: 'Send Password Reset - invalid email', to: logger.maskEmail(userEmail) });
+      return { success: false, error: 'Invalid recipient email' };
+    }
+
     const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
     
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      to: userEmail,
+      to: toAddress,
       subject: 'Password Reset Request - Academic Management System',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -197,7 +258,11 @@ class EmailService {
       `
     };
 
-    const result = await this.sendWithRetry(mailOptions);
+    const result = await this.sendWithRetry(mailOptions, {
+      type: 'password_reset',
+      recipientName: userName,
+      data: { resetUrl }
+    });
 
     if (result.success) {
       return { success: true };
@@ -220,9 +285,15 @@ class EmailService {
   async sendTestAssignmentNotification(collegeEmail, collegeAdminName, testName, collegeName, startDateTime, endDateTime) {
   logger.info('Sending test assignment notification', Object.assign({ testName, collegeName }, { to: logger.maskEmail(collegeEmail) }));
     
+    const toAddress = String(collegeEmail || '').trim();
+    if (!this.isValidEmail(toAddress)) {
+      logger.errorLog(new Error('Invalid recipient email'), { context: 'Send Test Assignment - invalid email', to: logger.maskEmail(collegeEmail) });
+      return { success: false, error: 'Invalid recipient email' };
+    }
+
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      to: collegeEmail,
+      to: toAddress,
       subject: `New Test Assignment - ${testName}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -256,7 +327,11 @@ class EmailService {
       `
     };
 
-    const result = await this.sendWithRetry(mailOptions);
+    const result = await this.sendWithRetry(mailOptions, {
+      type: 'test_assignment',
+      recipientName: collegeAdminName,
+      data: { testName, collegeName, startDateTime, endDateTime }
+    });
 
     if (result.success) {
       return { success: true };
@@ -269,9 +344,15 @@ class EmailService {
   async sendCollegeCreated(collegeEmail, collegeName, adminName, additionalInfo = {}) {
   logger.info('Sending college creation confirmation email', { to: logger.maskEmail(collegeEmail) });
 
+    const toAddress = String(collegeEmail || '').trim();
+    if (!this.isValidEmail(toAddress)) {
+      logger.errorLog(new Error('Invalid recipient email'), { context: 'Send College Created - invalid email', to: logger.maskEmail(collegeEmail) });
+      return { success: false, error: 'Invalid recipient email' };
+    }
+
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      to: collegeEmail,
+      to: toAddress,
       subject: `Welcome to Academic Management - ${collegeName}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -296,7 +377,11 @@ class EmailService {
       `
     };
 
-    const result = await this.sendWithRetry(mailOptions);
+    const result = await this.sendWithRetry(mailOptions, {
+      type: 'college_created',
+      recipientName: adminName,
+      data: Object.assign({ collegeName }, additionalInfo)
+    });
     if (result.success) return { success: true };
     return { success: false, error: result.error };
   }
@@ -304,9 +389,15 @@ class EmailService {
   async sendTestAssignmentToStudent(studentEmail, studentName, testName, startDateTime, endDateTime, duration) {
   logger.info('Sending test assignment to student', Object.assign({ testName }, { to: logger.maskEmail(studentEmail) }));
     
+    const toAddress = String(studentEmail || '').trim();
+    if (!this.isValidEmail(toAddress)) {
+      logger.errorLog(new Error('Invalid recipient email'), { context: 'Send Test Assignment To Student - invalid email', to: logger.maskEmail(studentEmail) });
+      return { success: false, error: 'Invalid recipient email' };
+    }
+
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      to: studentEmail,
+      to: toAddress,
       subject: `Test Assignment - ${testName}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -343,7 +434,11 @@ class EmailService {
       `
     };
 
-    const result = await this.sendWithRetry(mailOptions);
+    const result = await this.sendWithRetry(mailOptions, {
+      type: 'test_assignment',
+      recipientName: studentName,
+      data: { testName, startDateTime, endDateTime, duration }
+    });
 
     if (result.success) {
       return { success: true };
@@ -354,8 +449,13 @@ class EmailService {
   }
 
   async sendNotificationEmail(userEmail, userName, title, message, type = 'general', priority = 'medium', attachment = null) {
-  logger.info('Sending notification email', Object.assign({ title, type, priority }, { to: logger.maskEmail(userEmail) }));
-    
+    logger.info('Sending notification email', Object.assign({ title, type, priority }, { to: logger.maskEmail(userEmail) }));
+    const toAddress = String(userEmail || '').trim();
+    if (!this.isValidEmail(toAddress)) {
+      logger.errorLog(new Error('Invalid recipient email'), { context: 'Send Notification - invalid email', to: logger.maskEmail(userEmail) });
+      return { success: false, error: 'Invalid recipient email' };
+    }
+
     const priorityColors = {
       low: '#10B981',
       medium: '#3B82F6', 
@@ -371,7 +471,7 @@ class EmailService {
     
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      to: userEmail,
+      to: toAddress,
       subject: `${typeIcons[type] || '📢'} ${title}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -418,7 +518,11 @@ class EmailService {
       ];
     }
 
-    const result = await this.sendWithRetry(mailOptions);
+    const result = await this.sendWithRetry(mailOptions, {
+      type: 'notification',
+      recipientName: userName,
+      data: { title, message, type, priority }
+    });
 
     if (result.success) {
       return { success: true };
