@@ -56,6 +56,9 @@ const CodingInterface: React.FC<CodingInterfaceProps> = ({
   const [showDescription, setShowDescription] = useState(true);
   const [showTestResults, setShowTestResults] = useState(true);
   const [autosaveStatus, setAutosaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [hasRunAllTests, setHasRunAllTests] = useState(false);
+  const [testCasesPassed, setTestCasesPassed] = useState(0);
+  const [totalTestCases, setTotalTestCases] = useState(0);
 
   useEffect(() => {
     fetchQuestion();
@@ -181,18 +184,15 @@ const CodingInterface: React.FC<CodingInterfaceProps> = ({
     }
   };
 
-  const handleSubmit = async () => {
+  const handleRunAllTests = async () => {
     if (!code.trim()) {
       alert('Please write some code first');
       return;
     }
 
-    if (!confirm('Are you sure you want to submit your solution? This will run all test cases.')) {
-      return;
-    }
-
     setIsSubmitting(true);
     setSubmissionStatus(null);
+    setOutput('Running all test cases...');
 
     try {
       interface SubmitResponse {
@@ -208,22 +208,77 @@ const CodingInterface: React.FC<CodingInterfaceProps> = ({
         questionId,
         testAttemptId,
         code,
-        // normalize language casing to match backend expectations (e.g. 'javascript', 'python')
         language: selectedLanguage.toLowerCase(),
         isPractice
       });
 
-      // API returns top-level fields (not wrapped in `data`)
-      setSubmissionStatus(response.status);
       setTestResults(response.testResults || []);
+      setTestCasesPassed(response.testCasesPassed || 0);
+      setTotalTestCases(response.totalTestCases || 0);
+      setHasRunAllTests(true);
+      setOutput(`Test Results: ${response.testCasesPassed}/${response.totalTestCases} test cases passed`);
+
+      console.info('Test run complete', {
+        status: response.status,
+        testCasesPassed: response.testCasesPassed,
+        totalTestCases: response.totalTestCases
+      });
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.error || error?.message || 'Error running test cases';
+      console.error('Test run error details:', {
+        status: error?.response?.status,
+        data: error?.response?.data,
+        message: error?.message,
+        fullError: error
+      });
+      setOutput('Error: ' + errorMessage);
+      alert(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleFinalSubmit = async () => {
+    if (!hasRunAllTests) {
+      alert('Please run all test cases first before submitting');
+      return;
+    }
+
+    const confirmMessage = `Are you sure you want to make your final submission?\n\nTest Results: ${testCasesPassed}/${totalTestCases} test cases passed\n\nThis action cannot be undone.`;
+
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      interface SubmitResponse {
+        status: string;
+        testResults: TestResult[];
+        submissionId: string;
+        score: number;
+        testCasesPassed: number;
+        totalTestCases: number;
+      }
+
+      const response = await api.post<SubmitResponse>('/coding/submit', {
+        questionId,
+        testAttemptId,
+        code,
+        language: selectedLanguage.toLowerCase(),
+        isPractice
+      });
+
+      setSubmissionStatus(response.status);
 
       if (onSubmit) {
         onSubmit(response.submissionId, response.score);
       }
 
-      // Do not show modal/alert with the coding-round score here.
-      // Parent component (TestCodingSection) will handle navigation and final submission prompt.
-      console.info('Submission result', {
+      alert(`Final submission successful!\n\n${response.testCasesPassed}/${response.totalTestCases} test cases passed`);
+
+      console.info('Final submission result', {
         status: response.status,
         testCasesPassed: response.testCasesPassed,
         totalTestCases: response.totalTestCases,
@@ -406,15 +461,33 @@ const CodingInterface: React.FC<CodingInterfaceProps> = ({
                   Run Code
                 </button>
                 <button
-                  onClick={handleSubmit}
+                  onClick={handleRunAllTests}
                   disabled={isSubmitting}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center gap-2 text-sm"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2 text-sm"
                 >
-                  {isSubmitting ? <Loader className="w-4 h-4 animate-spin" /> : null}
-                  Submit
+                  {isSubmitting && !hasRunAllTests ? <Loader className="w-4 h-4 animate-spin" /> : null}
+                  Run All Test Cases
                 </button>
+                {hasRunAllTests && (
+                  <button
+                    onClick={handleFinalSubmit}
+                    disabled={isSubmitting}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center gap-2 text-sm font-semibold"
+                  >
+                    {isSubmitting && hasRunAllTests ? <Loader className="w-4 h-4 animate-spin" /> : null}
+                    Final Submit
+                  </button>
+                )}
               </div>
             </div>
+            {hasRunAllTests && !submissionStatus && (
+              <div className="px-4 py-2 text-center text-sm bg-yellow-50 border-b flex-shrink-0">
+                <span className="font-medium text-yellow-800">
+                  Test Results: {testCasesPassed}/{totalTestCases} test cases passed
+                  {testCasesPassed === totalTestCases ? ' ✅ All tests passed!' : ' - Review failed cases below'}
+                </span>
+              </div>
+            )}
             {submissionStatus && (
               <div className="px-4 py-2 text-center text-sm bg-blue-50 border-b flex-shrink-0">
                 <span
@@ -424,8 +497,8 @@ const CodingInterface: React.FC<CodingInterfaceProps> = ({
                     }`}
                 >
                   {submissionStatus.toLowerCase() === 'accepted'
-                    ? '✅ Accepted! Great job.'
-                    : `❌ Submission status: ${submissionStatus}`}
+                    ? '✅ Final Submission Accepted! Great job.'
+                    : `Final Submission status: ${submissionStatus}`}
                 </span>
               </div>
             )}
@@ -441,7 +514,29 @@ const CodingInterface: React.FC<CodingInterfaceProps> = ({
                 )}
 
                 {testResults.length > 0 && (
-                  <div className="space-y-2">
+                  <div className="space-y-3">
+                    <div className="bg-white border rounded-lg p-4 mb-4">
+                      <h3 className="font-semibold text-gray-900 mb-2">Test Summary</h3>
+                      <div className="flex gap-6 text-sm">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle className="w-5 h-5 text-green-600" />
+                          <span className="font-medium text-green-600">
+                            Passed: {testResults.filter(r => r.passed).length}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <XCircle className="w-5 h-5 text-red-600" />
+                          <span className="font-medium text-red-600">
+                            Failed: {testResults.filter(r => !r.passed).length}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-gray-700">
+                            Total: {testResults.length}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
                     {testResults.map((result, index) => (
                       <div
                         key={index}
