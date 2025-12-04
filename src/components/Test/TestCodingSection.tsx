@@ -42,6 +42,58 @@ const TestCodingSection: React.FC<TestCodingSectionProps> = ({
 
   const currentQuestion = codingQuestions[currentQuestionIndex];
 
+  if (!codingQuestions || codingQuestions.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md text-center">
+          <Code className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">No Coding Questions</h2>
+          <p className="text-gray-600 mb-6">
+            This test does not have any coding questions configured. Please contact your instructor.
+          </p>
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              Go Back
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (!currentQuestion) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md text-center">
+          <Code className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Question Not Found</h2>
+          <p className="text-gray-600 mb-6">
+            The selected coding question could not be loaded. Please try refreshing the page.
+          </p>
+          <div className="flex gap-3 justify-center">
+            {onBack && (
+              <button
+                onClick={onBack}
+                className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+              >
+                Go Back
+              </button>
+            )}
+            <button
+              onClick={() => window.location.reload()}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              Refresh Page
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const handleSubmission = (questionIndex: number, submissionId: string, score: number) => {
     const newSubmissions = [...submissions];
     newSubmissions[questionIndex] = { submissionId, score, questionId: codingQuestions[questionIndex]._id };
