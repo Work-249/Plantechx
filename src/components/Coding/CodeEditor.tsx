@@ -173,13 +173,14 @@ func main() {
           )}
         </div>
 
-        <div className="relative h-full w-full flex">
-          <div 
+        <div className="relative flex" style={{ height: isFullscreen ? 'calc(100vh - 100px)' : height, minHeight: '400px' }}>
+          <div
             ref={lineNumbersRef}
-            className="w-16 bg-gray-900 border-r border-gray-700 flex flex-col text-right pr-3 py-3 text-xs text-gray-500 font-mono select-none overflow-hidden"
+            className="w-16 bg-gray-900 border-r border-gray-700 flex flex-col text-right pr-3 py-3 text-xs text-gray-500 font-mono select-none overflow-y-auto"
+            style={{ maxHeight: '100%' }}
           >
             {code.split('\n').map((_, i) => (
-              <div key={i} className="leading-6 text-gray-400">{i + 1}</div>
+              <div key={i} className="leading-6 text-gray-400" style={{ minHeight: '24px' }}>{i + 1}</div>
             ))}
           </div>
 
@@ -188,10 +189,12 @@ func main() {
             value={code}
             onChange={handleCodeChange}
             readOnly={readOnly}
-            className="flex-1 pl-4 pr-4 py-3 font-mono text-sm leading-6 focus:outline-none resize-none bg-gray-900 text-gray-100 caret-blue-400"
+            className="flex-1 pl-4 pr-4 py-3 font-mono text-sm leading-6 focus:outline-none resize-none bg-gray-900 text-white caret-blue-400 overflow-y-auto"
             style={{
-              height: isFullscreen ? 'calc(100vh - 100px)' : height,
-              tabSize: 2
+              height: '100%',
+              width: '100%',
+              tabSize: 2,
+              minHeight: '400px'
             }}
             spellCheck={false}
             onKeyDown={(e) => {
