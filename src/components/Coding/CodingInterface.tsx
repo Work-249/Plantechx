@@ -301,8 +301,8 @@ const CodingInterface: React.FC<CodingInterfaceProps> = ({
       </div>
 
       <div className="flex-1 flex overflow-hidden min-h-0">
-        <div className={`${fullscreen ? 'w-1/3' : 'w-1/3'} border-r bg-white overflow-y-auto flex-shrink-0`}>
-          <div className="p-4 space-y-4 pb-12">
+        <div className={`${fullscreen ? 'w-1/4' : 'w-1/4'} border-r bg-white overflow-y-auto flex-shrink-0`}>
+          <div className="p-3 space-y-3 pb-12">
             <div>
               <button
                 onClick={() => setShowDescription(!showDescription)}
@@ -373,7 +373,7 @@ const CodingInterface: React.FC<CodingInterfaceProps> = ({
           </div>
         </div>
 
-        <div className={`${fullscreen ? 'w-2/3' : 'w-2/3'} flex flex-col min-h-0`}>
+        <div className={`${fullscreen ? 'w-3/4' : 'w-3/4'} flex flex-col min-h-0`}>
           <div className="flex-1 p-2 bg-white flex flex-col min-h-0 overflow-hidden">
             <div className="flex-1 min-h-0 overflow-hidden">
               <CodeEditor
