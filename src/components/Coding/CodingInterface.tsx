@@ -301,80 +301,80 @@ const CodingInterface: React.FC<CodingInterfaceProps> = ({
       </div>
 
       <div className="flex-1 flex overflow-hidden min-h-0">
-        <div className={`${fullscreen ? 'w-2/5' : 'w-2/5'} border-r bg-white overflow-y-auto flex-shrink-0`}>
-          <div className="p-6 space-y-6 pb-12">
+        <div className={`${fullscreen ? 'w-1/3' : 'w-1/3'} border-r bg-white overflow-y-auto flex-shrink-0`}>
+          <div className="p-4 space-y-4 pb-12">
             <div>
               <button
                 onClick={() => setShowDescription(!showDescription)}
-                className="flex items-center justify-between w-full text-left mb-3 sticky top-0 bg-white z-10"
+                className="flex items-center justify-between w-full text-left mb-2 sticky top-0 bg-white z-10 py-2"
               >
-                <h2 className="text-lg font-semibold text-gray-800">Problem Description</h2>
+                <h2 className="text-base font-semibold text-gray-800">Problem Description</h2>
                 {showDescription ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
               </button>
               {showDescription && (
                 <div className="prose max-w-none">
-                  <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">{question.description}</p>
+                  <p className="text-gray-700 whitespace-pre-wrap leading-relaxed text-sm">{question.description}</p>
                 </div>
               )}
             </div>
 
             {question.constraints && (
               <div>
-                <h3 className="font-semibold text-gray-800 mb-2">Constraints</h3>
-                <p className="text-gray-700 text-sm whitespace-pre-wrap">{question.constraints}</p>
+                <h3 className="font-semibold text-gray-800 mb-1 text-sm">Constraints</h3>
+                <p className="text-gray-700 text-xs whitespace-pre-wrap">{question.constraints}</p>
               </div>
             )}
 
             {question.input_format && (
               <div>
-                <h3 className="font-semibold text-gray-800 mb-2">Input Format</h3>
-                <p className="text-gray-700 text-sm whitespace-pre-wrap">{question.input_format}</p>
+                <h3 className="font-semibold text-gray-800 mb-1 text-sm">Input Format</h3>
+                <p className="text-gray-700 text-xs whitespace-pre-wrap">{question.input_format}</p>
               </div>
             )}
 
             {question.output_format && (
               <div>
-                <h3 className="font-semibold text-gray-800 mb-2">Output Format</h3>
-                <p className="text-gray-700 text-sm whitespace-pre-wrap">{question.output_format}</p>
+                <h3 className="font-semibold text-gray-800 mb-1 text-sm">Output Format</h3>
+                <p className="text-gray-700 text-xs whitespace-pre-wrap">{question.output_format}</p>
               </div>
             )}
 
             {question.sample_input && (
               <div>
-                <h3 className="font-semibold text-gray-800 mb-2">Sample Input</h3>
-                <pre className="bg-gray-100 p-3 rounded text-sm overflow-x-auto">{question.sample_input}</pre>
+                <h3 className="font-semibold text-gray-800 mb-1 text-sm">Sample Input</h3>
+                <pre className="bg-gray-100 p-2 rounded text-xs overflow-x-auto">{question.sample_input}</pre>
               </div>
             )}
 
             {question.sample_output && (
               <div>
-                <h3 className="font-semibold text-gray-800 mb-2">Sample Output</h3>
-                <pre className="bg-gray-100 p-3 rounded text-sm overflow-x-auto">{question.sample_output}</pre>
+                <h3 className="font-semibold text-gray-800 mb-1 text-sm">Sample Output</h3>
+                <pre className="bg-gray-100 p-2 rounded text-xs overflow-x-auto">{question.sample_output}</pre>
               </div>
             )}
 
             {question.explanation && (
               <div>
-                <h3 className="font-semibold text-gray-800 mb-2">Explanation</h3>
-                <p className="text-gray-700 text-sm whitespace-pre-wrap">{question.explanation}</p>
+                <h3 className="font-semibold text-gray-800 mb-1 text-sm">Explanation</h3>
+                <p className="text-gray-700 text-xs whitespace-pre-wrap">{question.explanation}</p>
               </div>
             )}
 
-            <div className="flex items-center gap-6 text-sm text-gray-600 pt-4 border-t">
+            <div className="flex flex-col gap-2 text-xs text-gray-600 pt-3 border-t">
               <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4" />
+                <Clock className="w-3 h-3" />
                 <span>Time Limit: {question.time_limit}ms</span>
               </div>
               <div className="flex items-center gap-2">
-                <Terminal className="w-4 h-4" />
+                <Terminal className="w-3 h-3" />
                 <span>Memory Limit: {question.memory_limit}MB</span>
               </div>
             </div>
           </div>
         </div>
 
-        <div className={`${fullscreen ? 'w-3/5' : 'w-3/5'} flex flex-col min-h-0`}>
-          <div className="flex-1 p-4 bg-white flex flex-col min-h-0 overflow-hidden">
+        <div className={`${fullscreen ? 'w-2/3' : 'w-2/3'} flex flex-col min-h-0`}>
+          <div className="flex-1 p-2 bg-white flex flex-col min-h-0 overflow-hidden">
             <div className="flex-1 min-h-0 overflow-hidden">
               <CodeEditor
                 language={selectedLanguage}
@@ -386,7 +386,7 @@ const CodingInterface: React.FC<CodingInterfaceProps> = ({
             </div>
           </div>
 
-          <div className="border-t bg-white flex flex-col" style={{ height: '35%', minHeight: '200px' }}>
+          <div className="border-t bg-white flex flex-col" style={{ height: '30%', minHeight: '180px' }}>
             <div className="px-4 py-2 flex items-center justify-between border-b bg-gray-100 flex-shrink-0">
               <button
                 onClick={() => setShowTestResults(!showTestResults)}
