@@ -246,9 +246,9 @@ const TCSTestInterface: React.FC<TCSTestInterfaceProps> = ({
 
   const handleSubmit = async () => {
     if (submitting) return;
-    setSubmitting(true);
 
     try {
+      setSubmitting(true);
       const answerArray = Object.entries(answers).map(([questionId, selectedAnswer]) => ({
         questionId,
         selectedAnswer
@@ -256,10 +256,12 @@ const TCSTestInterface: React.FC<TCSTestInterfaceProps> = ({
 
       const timeSpent = Math.floor((new Date().getTime() - startTime.getTime()) / 1000);
       await onSubmit(answerArray, timeSpent, violations);
+      setShowSubmitConfirm(false);
     } catch (error) {
       console.error('Error submitting test:', error);
       alert('Error submitting test. Please try again.');
       setSubmitting(false);
+      setShowSubmitConfirm(false);
     }
   };
 

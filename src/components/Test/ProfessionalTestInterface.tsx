@@ -363,6 +363,7 @@ const ProfessionalTestInterface: React.FC<ProfessionalTestInterfaceProps> = ({
     if (!isAutoSubmit && (counts.notAnswered > 0 || counts.notVisited > 0)) {
       const confirmMessage = `You have ${counts.notAnswered + counts.notVisited} unanswered questions. Are you sure you want to submit?`;
       if (!window.confirm(confirmMessage)) {
+        setShowConfirmSubmit(false);
         return;
       }
     }
@@ -382,24 +383,16 @@ const ProfessionalTestInterface: React.FC<ProfessionalTestInterfaceProps> = ({
 
       const timeSpent = Math.floor((Date.now() - startTime.getTime()) / 1000 / 60);
 
-      // If the test includes a coding section and the user explicitly chose
-      // to start the coding flow (startCodingFlow === true), submit MCQ answers
-      // first then transition to the coding interface (keep fullscreen).
-      // If the user did NOT choose to start coding (startCodingFlow === false)
-      // treat this as a final submit for the entire test and finish below.
       if (test.hasCodingSection && test.codingQuestions && test.codingQuestions.length > 0 && startCodingFlow) {
         await onSubmit(submissionAnswers, timeSpent, tabSwitches);
 
-        // Mark MCQ part completed and open coding UI in full screen
         setMcqCompleted(true);
         setShowQuestionPalette(false);
-        // close the confirm modal used to start coding
         setShowConfirmSubmit(false);
         const firstCoding = test.codingQuestions[0];
         const firstId = firstCoding && (firstCoding._id || firstCoding.questionId || firstCoding.id);
         if (firstId) setSelectedCodingQuestionId(firstId);
 
-        // keep submitting false so student can continue with coding
         setSubmitting(false);
         return;
       }
@@ -417,8 +410,8 @@ const ProfessionalTestInterface: React.FC<ProfessionalTestInterfaceProps> = ({
       console.error('Submit error:', error);
       alert('Failed to submit test. Please try again.');
       setSubmitting(false);
+      setShowConfirmSubmit(false);
     } finally {
-      // Reset any transient intent to start coding flow when modal closes
       setStartCodingFlow(false);
     }
   };
