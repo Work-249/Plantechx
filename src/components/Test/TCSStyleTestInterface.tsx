@@ -293,6 +293,7 @@ const TCSStyleTestInterface: React.FC<TCSStyleTestInterfaceProps> = ({
       await onSubmit(submissionAnswers, timeSpent, codingSubmissions);
       setShowSubmitConfirm(false);
       setSubmitting(false);
+      onExit();
     } catch (error) {
       console.error('Submit error:', error);
       alert('Failed to submit test. Please try again.');

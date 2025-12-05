@@ -257,6 +257,7 @@ const TCSTestInterface: React.FC<TCSTestInterfaceProps> = ({
       await onSubmit(answerArray, timeSpent, violations);
       setShowSubmitConfirm(false);
       setSubmitting(false);
+      onExit();
     } catch (error) {
       console.error('Error submitting test:', error);
       alert('Error submitting test. Please try again.');

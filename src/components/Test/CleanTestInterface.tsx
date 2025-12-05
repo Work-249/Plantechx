@@ -406,6 +406,17 @@ const CleanTestInterface: React.FC<CleanTestInterfaceProps> = ({
       await onSubmit(submissionAnswers, timeSpent, tabSwitches);
       console.debug('handleSubmit: onSubmit resolved');
 
+      // If already in coding section, just exit the test
+      if (mcqCompleted) {
+        if (document.fullscreenElement) {
+          await document.exitFullscreen();
+        }
+        setSubmitting(false);
+        onExit();
+        return;
+      }
+
+      // If there's a coding section and we haven't entered it yet, transition to coding
       if (test.hasCodingSection && test.codingQuestions && test.codingQuestions.length > 0) {
         setMcqCompleted(true);
         setShowQuestionPalette(false);
@@ -417,6 +428,7 @@ const CleanTestInterface: React.FC<CleanTestInterfaceProps> = ({
         return;
       }
 
+      // No coding section, just exit
       if (document.fullscreenElement) {
         await document.exitFullscreen();
       }

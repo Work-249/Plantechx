@@ -224,6 +224,7 @@ const StudentTestInterface: React.FC<StudentTestInterfaceProps> = ({
 
       await onSubmit(submissionAnswers, timeSpent);
       setSubmitting(false);
+      onExit();
     } catch (error) {
       console.error('Submit error:', error);
       alert('Failed to submit test. Please try again.');

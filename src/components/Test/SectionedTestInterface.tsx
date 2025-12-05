@@ -233,6 +233,7 @@ const StudentTestInterface: React.FC<StudentTestInterfaceProps> = ({
       await onSubmit(submissionAnswers, timeSpent);
       setShowConfirmSubmit(false);
       setSubmitting(false);
+      onExit();
     } catch (error) {
       console.error('Submit error:', error);
       if (suppressAlerts) {
