@@ -473,8 +473,9 @@ const TCSTestInterface: React.FC<TCSTestInterfaceProps> = ({
                 questionId={selectedCodingQuestionId}
                 fullscreen={true}
                 isPractice={test.testType === 'Practice'}
+                suppressAlerts={true}
                 onSubmit={async (submissionId: string, score: number) => {
-                  alert(`Submission ${submissionId} scored ${score} points`);
+                  console.info('Coding submission received', { submissionId, score });
                 }}
               />
             ) : (
