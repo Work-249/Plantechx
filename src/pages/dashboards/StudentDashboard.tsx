@@ -497,10 +497,10 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ activeTab }) => {
           {assignedTests.map((test) => {
             const status = getTestStatus(test);
             return (
-              <div key={test._id} className="bg-white rounded-lg shadow p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
+              <div key={test._id} className="bg-white rounded-lg shadow p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-0 mb-4">
+                  <div className="flex-1 w-full sm:w-auto">
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
                       <h3 className="text-lg font-semibold text-gray-900">
                         {test.testId.testName}
                       </h3>
@@ -529,31 +529,39 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ activeTab }) => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-4">
                   <div className="text-center p-2 bg-gray-50 border rounded">
                     <p className="text-xs text-gray-600">Subject</p>
-                    <p className="font-semibold">{test.testId.subject}</p>
+                    <p className="font-semibold text-sm">{test.testId.subject}</p>
                   </div>
                   <div className="text-center p-2 bg-gray-50 border rounded">
                     <p className="text-xs text-gray-600">Questions</p>
-                    <p className="font-semibold">{test.testId.numberOfQuestions}</p>
+                    <p className="font-semibold text-sm">
+                      {(test.testId.numberOfQuestions || 0) +
+                       ((test.testId as any).hasCodingSection && (test.testId as any).codingQuestions
+                         ? (test.testId as any).codingQuestions.length
+                         : 0)}
+                    </p>
+                    {(test.testId as any).hasCodingSection && (test.testId as any).codingQuestions && (test.testId as any).codingQuestions.length > 0 && (
+                      <p className="text-xs text-gray-500">+{(test.testId as any).codingQuestions.length} coding</p>
+                    )}
                   </div>
                   <div className="text-center p-2 bg-gray-50 border rounded">
                     <p className="text-xs text-gray-600">Duration</p>
-                    <p className="font-semibold">{test.testId.duration} min</p>
+                    <p className="font-semibold text-sm">{test.testId.duration} min</p>
                   </div>
                   <div className="text-center p-2 bg-gray-50 border rounded">
                     <p className="text-xs text-gray-600">Total Marks</p>
-                    <p className="font-semibold">{test.testId.totalMarks}</p>
+                    <p className="font-semibold text-sm">{test.testId.totalMarks}</p>
                   </div>
                 </div>
 
                 <div className="border-t pt-4">
-                  <div className="text-sm text-gray-600 mb-3">
+                  <div className="text-xs sm:text-sm text-gray-600 mb-3">
                     <p><strong>Available:</strong> {formatDate(test.testId.startDateTime)} - {formatDate(test.testId.endDateTime)}</p>
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {test.hasAttempted ? (
                       <button
                         onClick={() => handleViewResults(test.testId._id)}

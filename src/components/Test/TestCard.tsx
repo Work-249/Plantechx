@@ -15,6 +15,10 @@ interface Test {
   startDateTime: string;
   endDateTime: string;
   createdAt: string;
+  hasCodingSection?: boolean;
+  codingQuestions?: any[];
+  hasSections?: boolean;
+  sections?: any[];
 }
 
 interface TestCardProps {
@@ -91,18 +95,37 @@ const TestCard: React.FC<TestCardProps> = ({ test, onView, onAssign, onEdit, onD
 
   const status = getStatus();
 
+  const getTotalQuestions = () => {
+    let mcqCount = test.numberOfQuestions || 0;
+
+    if (test.hasSections && test.sections && test.sections.length > 0) {
+      mcqCount = test.sections.reduce((acc: number, s: any) =>
+        acc + (s.numberOfQuestions || (s.questions ? s.questions.length : 0)), 0
+      );
+    }
+
+    const codingCount = (test.hasCodingSection && test.codingQuestions)
+      ? test.codingQuestions.length
+      : 0;
+
+    return mcqCount + codingCount;
+  };
+
+  const totalQuestions = getTotalQuestions();
+  const hasCoding = test.hasCodingSection && test.codingQuestions && test.codingQuestions.length > 0;
+
   return (
     <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border-2 border-gray-100 hover:border-blue-300 overflow-hidden">
-      <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-3 flex items-center justify-between">
-        <h3 className="text-lg font-bold text-white truncate flex-1">{test.testName}</h3>
+      <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-4 sm:px-6 py-3 flex items-center justify-between">
+        <h3 className="text-base sm:text-lg font-bold text-white truncate flex-1">{test.testName}</h3>
         <span className={`px-3 py-1 rounded-full text-xs font-bold ${status.color} shadow-md ml-2`}>
           {status.text}
         </span>
       </div>
 
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <div className="mb-4">
-          <p className="text-gray-700 text-sm leading-relaxed mb-3">{test.testDescription}</p>
+          <p className="text-gray-700 text-xs sm:text-sm leading-relaxed mb-3">{test.testDescription}</p>
 
           <div className="flex flex-wrap gap-2 mb-3">
             <span className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${getSubjectColor(test.subject)} shadow-sm border border-opacity-20 border-gray-900`}>
@@ -134,38 +157,41 @@ const TestCard: React.FC<TestCardProps> = ({ test, onView, onAssign, onEdit, onD
           )}
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-          <div className="text-center p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-md hover:shadow-lg transition-shadow group">
-            <FileText className="w-5 h-5 mx-auto mb-1.5 text-white group-hover:scale-110 transition-transform" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mb-4">
+          <div className="text-center p-2 sm:p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-md hover:shadow-lg transition-shadow group">
+            <FileText className="w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1 sm:mb-1.5 text-white group-hover:scale-110 transition-transform" />
             <p className="text-xs text-blue-100 font-medium">Questions</p>
-            <p className="text-lg font-bold text-white">{test.numberOfQuestions}</p>
+            <p className="text-base sm:text-lg font-bold text-white">{totalQuestions}</p>
+            {hasCoding && (
+              <p className="text-xs text-blue-200 mt-0.5">+{test.codingQuestions!.length} coding</p>
+            )}
           </div>
-          <div className="text-center p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-md hover:shadow-lg transition-shadow group">
-            <Users className="w-5 h-5 mx-auto mb-1.5 text-white group-hover:scale-110 transition-transform" />
+          <div className="text-center p-2 sm:p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-md hover:shadow-lg transition-shadow group">
+            <Users className="w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1 sm:mb-1.5 text-white group-hover:scale-110 transition-transform" />
             <p className="text-xs text-green-100 font-medium">Total Marks</p>
-            <p className="text-lg font-bold text-white">{test.totalMarks}</p>
+            <p className="text-base sm:text-lg font-bold text-white">{test.totalMarks}</p>
           </div>
-          <div className="text-center p-3 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-md hover:shadow-lg transition-shadow group">
-            <Clock className="w-5 h-5 mx-auto mb-1.5 text-white group-hover:scale-110 transition-transform" />
+          <div className="text-center p-2 sm:p-3 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-md hover:shadow-lg transition-shadow group">
+            <Clock className="w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1 sm:mb-1.5 text-white group-hover:scale-110 transition-transform" />
             <p className="text-xs text-orange-100 font-medium">Duration</p>
-            <p className="text-lg font-bold text-white">{test.duration} min</p>
+            <p className="text-base sm:text-lg font-bold text-white">{test.duration} min</p>
           </div>
-          <div className="text-center p-3 bg-gradient-to-br from-gray-600 to-gray-700 rounded-xl shadow-md hover:shadow-lg transition-shadow group">
-            <Calendar className="w-5 h-5 mx-auto mb-1.5 text-white group-hover:scale-110 transition-transform" />
+          <div className="text-center p-2 sm:p-3 bg-gradient-to-br from-gray-600 to-gray-700 rounded-xl shadow-md hover:shadow-lg transition-shadow group">
+            <Calendar className="w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1 sm:mb-1.5 text-white group-hover:scale-110 transition-transform" />
             <p className="text-xs text-gray-200 font-medium">Created</p>
-            <p className="text-xs font-bold text-white">{formatDate(test.createdAt)}</p>
+            <p className="text-xs font-bold text-white truncate">{formatDate(test.createdAt).split(',')[0]}</p>
           </div>
         </div>
 
-        <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-3 mb-4 border border-gray-200">
-          <div className="grid grid-cols-2 gap-2 text-xs">
+        <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-2 sm:p-3 mb-3 sm:mb-4 border border-gray-200">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
             <div>
               <p className="text-gray-500 font-medium mb-0.5">Start Date:</p>
-              <p className="text-gray-800 font-semibold">{formatDate(test.startDateTime)}</p>
+              <p className="text-gray-800 font-semibold text-xs">{formatDate(test.startDateTime)}</p>
             </div>
             <div>
               <p className="text-gray-500 font-medium mb-0.5">End Date:</p>
-              <p className="text-gray-800 font-semibold">{formatDate(test.endDateTime)}</p>
+              <p className="text-gray-800 font-semibold text-xs">{formatDate(test.endDateTime)}</p>
             </div>
           </div>
         </div>

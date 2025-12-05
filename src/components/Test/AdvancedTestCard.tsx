@@ -21,6 +21,8 @@ interface Test {
   attemptCount?: number;
   hasSections?: boolean;
   sections?: any[];
+  hasCodingSection?: boolean;
+  codingQuestions?: any[];
 }
 
 interface AdvancedTestCardProps {
@@ -122,10 +124,21 @@ const AdvancedTestCard: React.FC<AdvancedTestCardProps> = ({
 
   // Compute display values: if test has sections, aggregate from sections
   const computeTotalQuestions = () => {
-    if ((test as any).hasSections && Array.isArray((test as any).sections) && (test as any).sections.length > 0) {
-      return (test as any).sections.reduce((acc: number, s: any) => acc + (s.numberOfQuestions || (s.questions ? s.questions.length : 0)), 0);
+    let mcqCount = 0;
+
+    if (test.hasSections && Array.isArray(test.sections) && test.sections.length > 0) {
+      mcqCount = test.sections.reduce((acc: number, s: any) =>
+        acc + (s.numberOfQuestions || (s.questions ? s.questions.length : 0)), 0
+      );
+    } else {
+      mcqCount = typeof test.numberOfQuestions === 'number' ? test.numberOfQuestions : 0;
     }
-    return typeof test.numberOfQuestions === 'number' ? test.numberOfQuestions : 0;
+
+    const codingCount = (test.hasCodingSection && test.codingQuestions)
+      ? test.codingQuestions.length
+      : 0;
+
+    return mcqCount + codingCount;
   };
 
   const computeTotalDuration = () => {
@@ -142,6 +155,7 @@ const AdvancedTestCard: React.FC<AdvancedTestCardProps> = ({
 
   const displayNumberOfQuestions = computeTotalQuestions();
   const displayDuration = computeTotalDuration();
+  const hasCoding = test.hasCodingSection && test.codingQuestions && test.codingQuestions.length > 0;
 
   if (variant === 'compact') {
     return (
@@ -170,6 +184,9 @@ const AdvancedTestCard: React.FC<AdvancedTestCardProps> = ({
             <div className="text-center p-2 bg-gray-50 rounded-lg border border-gray-200">
               <FileText className="w-4 h-4 mx-auto mb-1 text-gray-600" />
               <p className="text-xs font-bold text-gray-900">{displayNumberOfQuestions}</p>
+              {hasCoding && (
+                <p className="text-xs text-gray-500">+{test.codingQuestions!.length} code</p>
+              )}
             </div>
             <div className="text-center p-2 bg-gray-50 rounded-lg border border-gray-200">
               <Award className="w-4 h-4 mx-auto mb-1 text-gray-600" />
@@ -261,24 +278,27 @@ const AdvancedTestCard: React.FC<AdvancedTestCardProps> = ({
           </div>
         )}
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200 shadow-sm hover:shadow-md transition-shadow">
-            <FileText className="w-6 h-6 mx-auto mb-2 text-blue-600" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
+          <div className="text-center p-3 sm:p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200 shadow-sm hover:shadow-md transition-shadow">
+            <FileText className="w-5 h-5 sm:w-6 sm:h-6 mx-auto mb-1 sm:mb-2 text-blue-600" />
             <p className="text-xs text-blue-600 font-medium mb-1">Questions</p>
-              <p className="text-xl font-bold text-blue-900">{displayNumberOfQuestions}</p>
+            <p className="text-lg sm:text-xl font-bold text-blue-900">{displayNumberOfQuestions}</p>
+            {hasCoding && (
+              <p className="text-xs text-blue-600 mt-0.5">+{test.codingQuestions!.length} coding</p>
+            )}
           </div>
-          <div className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border border-green-200 shadow-sm hover:shadow-md transition-shadow">
-            <Award className="w-6 h-6 mx-auto mb-2 text-green-600" />
+          <div className="text-center p-3 sm:p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border border-green-200 shadow-sm hover:shadow-md transition-shadow">
+            <Award className="w-5 h-5 sm:w-6 sm:h-6 mx-auto mb-1 sm:mb-2 text-green-600" />
             <p className="text-xs text-green-600 font-medium mb-1">Total Marks</p>
-            <p className="text-xl font-bold text-green-900">{test.totalMarks}</p>
+            <p className="text-lg sm:text-xl font-bold text-green-900">{test.totalMarks}</p>
           </div>
-          <div className="text-center p-4 bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl border border-orange-200 shadow-sm hover:shadow-md transition-shadow">
-            <Clock className="w-6 h-6 mx-auto mb-2 text-orange-600" />
+          <div className="text-center p-3 sm:p-4 bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl border border-orange-200 shadow-sm hover:shadow-md transition-shadow">
+            <Clock className="w-5 h-5 sm:w-6 sm:h-6 mx-auto mb-1 sm:mb-2 text-orange-600" />
             <p className="text-xs text-orange-600 font-medium mb-1">Duration</p>
-              <p className="text-xl font-bold text-orange-900">{displayDuration} min</p>
+            <p className="text-lg sm:text-xl font-bold text-orange-900">{displayDuration} min</p>
           </div>
-          <div className="text-center p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-            <Calendar className="w-6 h-6 mx-auto mb-2 text-gray-600" />
+          <div className="text-center p-3 sm:p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <Calendar className="w-5 h-5 sm:w-6 sm:h-6 mx-auto mb-1 sm:mb-2 text-gray-600" />
             <p className="text-xs text-gray-600 font-medium mb-1">Created</p>
             <p className="text-xs font-bold text-gray-900">{formatDateShort(test.createdAt)}</p>
           </div>
