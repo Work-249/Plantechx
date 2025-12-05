@@ -225,7 +225,7 @@ const TCSTestInterface: React.FC<TCSTestInterfaceProps> = ({
     setShowSectionComplete(true);
   };
 
-  const handleNextSection = () => {
+  const handleNextSection = async () => {
     setShowSectionComplete(false);
     if (test.hasSections && test.sections && currentSectionIndex < test.sections.length - 1) {
       setCurrentSectionIndex(currentSectionIndex + 1);
@@ -233,9 +233,27 @@ const TCSTestInterface: React.FC<TCSTestInterfaceProps> = ({
       setSectionTimeLeft(test.sections[currentSectionIndex + 1].sectionDuration * 60);
     } else {
       if (test.hasCodingSection && test.codingQuestions && test.codingQuestions.length > 0) {
-        setMcqCompleted(true);
-        if (test.codingQuestions.length > 0) {
-          setSelectedCodingQuestionId(test.codingQuestions[0]._id || test.codingQuestions[0].questionId);
+        // Submit MCQ answers before transitioning to coding section
+        try {
+          setSubmitting(true);
+          const answerArray = Object.entries(answers).map(([questionId, selectedAnswer]) => ({
+            questionId,
+            selectedAnswer
+          }));
+
+          const timeSpent = Math.floor((new Date().getTime() - startTime.getTime()) / 1000);
+          await onSubmit(answerArray, timeSpent, violations);
+
+          // Now transition to coding section
+          setMcqCompleted(true);
+          if (test.codingQuestions.length > 0) {
+            setSelectedCodingQuestionId(test.codingQuestions[0]._id || test.codingQuestions[0].questionId);
+          }
+          setSubmitting(false);
+        } catch (error) {
+          console.error('Error submitting MCQ answers:', error);
+          alert('Error submitting MCQ answers. Please try again.');
+          setSubmitting(false);
         }
       } else {
         setShowSubmitConfirm(true);
@@ -248,6 +266,17 @@ const TCSTestInterface: React.FC<TCSTestInterfaceProps> = ({
 
     try {
       setSubmitting(true);
+
+      // If we're in coding section, MCQs were already submitted
+      // Just close the test and exit
+      if (mcqCompleted) {
+        setShowSubmitConfirm(false);
+        setSubmitting(false);
+        onExit();
+        return;
+      }
+
+      // Submit MCQ answers
       const answerArray = Object.entries(answers).map(([questionId, selectedAnswer]) => ({
         questionId,
         selectedAnswer

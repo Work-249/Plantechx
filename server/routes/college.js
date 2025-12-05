@@ -963,7 +963,8 @@ router.get('/tests/:testId/report', auth, authorize('college_admin', 'faculty'),
     // Get all attempts
     const attempts = await TestAttempt.find({
       testId,
-      studentId: { $in: studentIds }
+      studentId: { $in: studentIds },
+      status: { $in: ['completed', 'auto-submitted-violations'] }
     }).populate('studentId', 'name email idNumber branch batch section');
 
     // Calculate statistics

@@ -94,7 +94,7 @@ router.get('/tests/:testId/report', auth, authorize('faculty'), async (req, res)
     const attempts = await TestAttempt.find({
       testId,
       collegeId: req.user.collegeId,
-      status: 'completed'
+      status: { $in: ['completed', 'auto-submitted-violations'] }
     })
     .populate({
       path: 'studentId',
