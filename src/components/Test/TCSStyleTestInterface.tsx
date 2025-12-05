@@ -80,6 +80,20 @@ const TCSStyleTestInterface: React.FC<TCSStyleTestInterfaceProps> = ({
   const [codingSubmissions, setCodingSubmissions] = useState<any[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Debug logging for test data
+  useEffect(() => {
+    console.log('=== Test Data Loaded ===');
+    console.log('Test ID:', test._id);
+    console.log('Test Name:', test.testName);
+    console.log('Has Sections:', test.hasSections);
+    console.log('Has Coding Section:', test.hasCodingSection);
+    console.log('Coding Questions:', test.codingQuestions);
+    console.log('Number of Coding Questions:', test.codingQuestions?.length || 0);
+    if (test.codingQuestions && test.codingQuestions.length > 0) {
+      console.log('First coding question:', test.codingQuestions[0]);
+    }
+  }, []);
+
   useEffect(() => {
     if (showInstructions) return;
 
@@ -202,7 +216,16 @@ const TCSStyleTestInterface: React.FC<TCSStyleTestInterfaceProps> = ({
   };
 
   const handleNextSection = () => {
+    console.log('=== handleNextSection called ===');
+    console.log('test.hasSections:', test.hasSections);
+    console.log('test.sections:', test.sections);
+    console.log('currentSectionIndex:', currentSectionIndex);
+    console.log('test.hasCodingSection:', test.hasCodingSection);
+    console.log('test.codingQuestions:', test.codingQuestions);
+    console.log('test.codingQuestions length:', test.codingQuestions?.length);
+
     if (test.hasSections && test.sections && currentSectionIndex < test.sections.length - 1) {
+      console.log('Moving to next MCQ section');
       setCurrentSectionIndex(currentSectionIndex + 1);
       setCurrentQuestionIndex(0);
       setShowSectionComplete(false);
@@ -211,7 +234,9 @@ const TCSStyleTestInterface: React.FC<TCSStyleTestInterfaceProps> = ({
         setVisitedQuestions(prev => ({ ...prev, [nextSectionQuestions[0]._id]: true }));
       }
     } else {
+      console.log('Last MCQ section completed - checking for coding section');
       if (test.hasCodingSection && test.codingQuestions && test.codingQuestions.length > 0) {
+        console.log('Transitioning to coding section');
         setMcqCompleted(true);
         setShowSectionComplete(false);
         setShowCodingSection(true);
@@ -220,6 +245,8 @@ const TCSStyleTestInterface: React.FC<TCSStyleTestInterfaceProps> = ({
           setSelectedCodingQuestionId(firstCoding._id || firstCoding.questionId);
         }
       } else {
+        console.log('No coding section - showing submit confirmation');
+        console.log('Reason: hasCodingSection=' + test.hasCodingSection + ', codingQuestions=' + (test.codingQuestions?.length || 0));
         setShowSubmitConfirm(true);
       }
     }
