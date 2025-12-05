@@ -307,29 +307,38 @@ const CollegeAdminDashboard: React.FC<CollegeAdminDashboardProps> = ({ activeTab
     try {
       await apiService.updateTestAssignmentStatus(assignmentId, status);
 
-      // If accepting a test, switch to that test type tab to show it immediately
-      if (status === 'accepted' && testType) {
-        setActiveTestType(testType);
-        setActiveSubject('all');
-        await loadAssignedTests(testType, 'all');
+      if (status === 'accepted') {
+        toast.success('Test assignment accepted successfully!');
+        if (testType) {
+          setActiveTestType(testType);
+          setActiveSubject('all');
+          await loadAssignedTests(testType, 'all');
+        } else {
+          await loadAssignedTests();
+        }
       } else {
-        // Just reload with current filters
+        toast.success('Test assignment rejected');
         await loadAssignedTests();
       }
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to update test status');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update test status';
+      toast.error(errorMessage);
     }
   };
 
   const handleAssignToStudents = async (assignmentId: string, filters: any) => {
     try {
       await apiService.assignTestToStudents(assignmentId, filters);
+
+      const studentCount = filters.specificStudents?.length || 0;
+      toast.success(`Test assigned successfully to ${studentCount} student${studentCount !== 1 ? 's' : ''}!`);
+
       setShowStudentAssignment(false);
       setSelectedTest(null);
-      // Reload tests with current filters
       await loadAssignedTests();
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to assign test to students');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to assign test to students';
+      toast.error(errorMessage);
     }
   };
 
@@ -357,17 +366,21 @@ const CollegeAdminDashboard: React.FC<CollegeAdminDashboardProps> = ({ activeTab
     try {
       setFormLoading(true);
       await apiService.updateUser(selectedUser._id, userData);
+
+      toast.success(`${selectedUser.role === 'faculty' ? 'Faculty' : 'Student'} updated successfully!`);
+
       setShowEditForm(false);
       setSelectedUser(null);
 
-      // Reload data
-      loadDashboardData();
+      await loadDashboardData();
       if (selectedUser.role === 'faculty') {
-        loadFaculty();
+        await loadFaculty();
       } else {
-        loadStudents();
+        await loadStudents();
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update user';
+      toast.error(errorMessage);
       throw error;
     } finally {
       setFormLoading(false);
@@ -390,19 +403,17 @@ const CollegeAdminDashboard: React.FC<CollegeAdminDashboardProps> = ({ activeTab
       setDeleteLoading(true);
       await apiService.deleteUser(userToDelete.id);
 
-      // Show success message
-      alert(`Successfully deleted ${userToDelete.role}: ${userToDelete.name}`);
+      toast.success(`Successfully deleted ${userToDelete.role}: ${userToDelete.name}`);
 
-      // Reload data
-      loadDashboardData();
+      await loadDashboardData();
       if (userToDelete.role === 'faculty') {
-        loadFaculty();
+        await loadFaculty();
       } else {
-        loadStudents();
+        await loadStudents();
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to delete user';
-      setError(`Failed to delete ${userToDelete.name}: ${errorMessage}`);
+      toast.error(`Failed to delete ${userToDelete.name}: ${errorMessage}`);
     } finally {
       setDeleteLoading(false);
       setShowDeleteConfirm(false);
