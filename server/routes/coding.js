@@ -7,7 +7,16 @@ const CodingTestCase = require('../models/CodingTestCase');
 const TestCodingSection = require('../models/TestCodingSection');
 const CodingSubmission = require('../models/CodingSubmission');
 const PracticeCodingProgress = require('../models/PracticeCodingProgress');
-const ivm = require('isolated-vm');
+const vm = require('vm');
+
+// Try to load isolated-vm, but fall back to vm if not available
+let ivm;
+try {
+  ivm = require('isolated-vm');
+} catch (e) {
+  console.warn('isolated-vm not available, using built-in vm module');
+  ivm = null;
+}
 
 router.get('/questions', authenticateToken, async (req, res) => {
   try {
@@ -443,52 +452,84 @@ async function runCodeInSandbox(code, language, input) {
 
     try {
       if (language === 'javascript') {
-        const isolate = new ivm.Isolate({ memoryLimit: 128 });
-        const context = await isolate.createContext();
+        // Use isolated-vm if available, otherwise fall back to built-in vm
+        if (ivm) {
+          const isolate = new ivm.Isolate({ memoryLimit: 128 });
+          const context = await isolate.createContext();
 
-        const jail = context.global;
-        await jail.set('global', jail.derefInto());
+          const jail = context.global;
+          await jail.set('global', jail.derefInto());
 
-        const outputLogs = [];
-        await jail.set('_consoleLog', new ivm.Reference(function(...args) {
-          outputLogs.push(args.map(a => String(a)).join(' '));
-        }));
+          const outputLogs = [];
+          await jail.set('_consoleLog', new ivm.Reference(function(...args) {
+            outputLogs.push(args.map(a => String(a)).join(' '));
+          }));
 
-        const inputLines = input.split('\n');
-        await jail.set('_inputLines', JSON.stringify(inputLines));
-        await jail.set('_inputIndex', 0);
+          const inputLines = input.split('\n');
+          await jail.set('_inputLines', JSON.stringify(inputLines));
+          await jail.set('_inputIndex', 0);
 
-        const wrappedCode = `
-          let _inputLines = JSON.parse(_inputLines);
-          let _inputIndex = 0;
+          const wrappedCode = `
+            let _inputLines = JSON.parse(_inputLines);
+            let _inputIndex = 0;
 
-          const console = {
-            log: (...args) => _consoleLog.applySync(undefined, args)
-          };
+            const console = {
+              log: (...args) => _consoleLog.applySync(undefined, args)
+            };
 
-          const readline = () => {
-            if (_inputIndex < _inputLines.length) {
-              return _inputLines[_inputIndex++];
+            const readline = () => {
+              if (_inputIndex < _inputLines.length) {
+                return _inputLines[_inputIndex++];
+              }
+              return '';
+            };
+
+            ${code}
+
+            // Capture console output
+            '';
+          `;
+
+          try {
+            const script = await isolate.compileScript(wrappedCode);
+            await script.run(context, { timeout });
+
+            const output = outputLogs.join('\n');
+            isolate.dispose();
+            resolve(output);
+          } catch (error) {
+            isolate.dispose();
+            reject(new Error(`Runtime Error: ${error.message}`));
+          }
+        } else {
+          // Fallback to built-in vm module
+          const outputLogs = [];
+          const inputLines = input.split('\n');
+          let inputIndex = 0;
+
+          const sandbox = {
+            console: {
+              log: (...args) => {
+                outputLogs.push(args.map(a => String(a)).join(' '));
+              }
+            },
+            readline: () => {
+              if (inputIndex < inputLines.length) {
+                return inputLines[inputIndex++];
+              }
+              return '';
             }
-            return '';
           };
 
-          ${code}
+          try {
+            const script = new vm.Script(code);
+            const context = vm.createContext(sandbox);
+            script.runInContext(context, { timeout });
 
-          // Capture console output
-          '';
-        `;
-
-        try {
-          const script = await isolate.compileScript(wrappedCode);
-          await script.run(context, { timeout });
-
-          const output = outputLogs.join('\n');
-          isolate.dispose();
-          resolve(output);
-        } catch (error) {
-          isolate.dispose();
-          reject(new Error(`Runtime Error: ${error.message}`));
+            resolve(outputLogs.join('\n'));
+          } catch (error) {
+            reject(new Error(`Runtime Error: ${error.message}`));
+          }
         }
       } else if (language === 'python') {
         // For Python execution, we'll use child_process to run Python
