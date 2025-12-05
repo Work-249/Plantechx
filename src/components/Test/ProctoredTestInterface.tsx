@@ -318,6 +318,7 @@ const ProctoredTestInterface: React.FC<ProctoredTestInterfaceProps> = ({
       await exitFullscreen();
       await onSubmit(submissionAnswers, timeSpent, violations);
       console.debug('Proctored handleSubmit: onSubmit resolved');
+      setSubmitting(false);
     } catch (error) {
       console.error('Submit error:', error);
       alert('Failed to submit test. Please try again.');

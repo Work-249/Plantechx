@@ -409,6 +409,7 @@ const CleanTestInterface: React.FC<CleanTestInterfaceProps> = ({
       if (test.hasCodingSection && test.codingQuestions && test.codingQuestions.length > 0) {
         setMcqCompleted(true);
         setShowQuestionPalette(false);
+        setShowConfirmSubmit(false);
         const firstCoding = test.codingQuestions[0];
         const firstId = firstCoding && (firstCoding._id || firstCoding.questionId || firstCoding.id);
         if (firstId) setSelectedCodingQuestionId(firstId);

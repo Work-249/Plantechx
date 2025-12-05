@@ -203,7 +203,7 @@ const StudentTestInterface: React.FC<StudentTestInterfaceProps> = ({
     if (submitting) return;
 
     const unansweredCount = test.numberOfQuestions - getAnsweredCount();
-    
+
     if (!isAutoSubmit && unansweredCount > 0) {
       const confirmMessage = `You have ${unansweredCount} unanswered questions. Are you sure you want to submit?`;
       if (!window.confirm(confirmMessage)) {
@@ -213,7 +213,7 @@ const StudentTestInterface: React.FC<StudentTestInterfaceProps> = ({
 
     try {
       setSubmitting(true);
-      
+
       const submissionAnswers = test.questions.map(question => ({
         questionId: question._id,
         selectedAnswer: answers[question._id] || 'A', // Default to A if not answered
@@ -221,8 +221,9 @@ const StudentTestInterface: React.FC<StudentTestInterfaceProps> = ({
       }));
 
       const timeSpent = Math.floor((Date.now() - startTime.getTime()) / 1000 / 60); // in minutes
-      
+
       await onSubmit(submissionAnswers, timeSpent);
+      setSubmitting(false);
     } catch (error) {
       console.error('Submit error:', error);
       alert('Failed to submit test. Please try again.');
