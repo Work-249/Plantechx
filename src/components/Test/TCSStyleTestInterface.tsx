@@ -451,21 +451,21 @@ const TCSStyleTestInterface: React.FC<TCSStyleTestInterfaceProps> = ({
           </div>
         </div>
 
-        <div className="flex-1 flex overflow-hidden">
-          <div className="w-64 bg-white border-r p-4 overflow-y-auto">
+        <div className="flex-1 flex overflow-hidden min-h-0">
+          <div className="w-full md:w-64 bg-white md:border-r p-4 overflow-y-auto flex-shrink-0">
             <h3 className="font-semibold mb-4">Coding Questions</h3>
-            <div className="space-y-2">
+            <div className="space-y-2 flex md:flex-col gap-2 overflow-x-auto md:overflow-x-visible">
               {test.codingQuestions?.map((cq: any, idx: number) => (
                 <button
                   key={cq._id || idx}
                   onClick={() => setSelectedCodingQuestionId(cq._id || cq.questionId)}
-                  className={`w-full text-left p-3 rounded-lg border-2 ${
+                  className={`flex-shrink-0 md:flex-shrink md:w-full text-left p-3 rounded-lg border-2 ${
                     selectedCodingQuestionId === (cq._id || cq.questionId)
                       ? 'border-blue-500 bg-blue-50'
                       : 'border-gray-200 hover:border-blue-300'
                   }`}
                 >
-                  <div className="font-medium text-sm">{cq.title || `Question ${idx + 1}`}</div>
+                  <div className="font-medium text-sm whitespace-nowrap md:whitespace-normal">{cq.title || `Question ${idx + 1}`}</div>
                   <div className="text-xs text-gray-500 mt-1">
                     Points: {cq.points || 100}
                   </div>
@@ -474,14 +474,21 @@ const TCSStyleTestInterface: React.FC<TCSStyleTestInterfaceProps> = ({
             </div>
           </div>
 
-          <div className="flex-1">
-            {selectedCodingQuestionId && (
+          <div className="flex-1 overflow-hidden min-h-0">
+            {selectedCodingQuestionId ? (
               <CodingInterface
                 questionId={selectedCodingQuestionId}
                 fullscreen={true}
                 isPractice={false}
                 onSubmit={handleCodingSubmit}
               />
+            ) : (
+              <div className="flex items-center justify-center h-full text-gray-500">
+                <div className="text-center">
+                  <Code className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                  <p>Select a coding question to begin</p>
+                </div>
+              </div>
             )}
           </div>
         </div>

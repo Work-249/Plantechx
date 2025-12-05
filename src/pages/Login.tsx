@@ -198,7 +198,7 @@ const handleSubmit = async (e: React.FormEvent) => {
       <div className="max-w-md w-full space-y-8 relative z-10">
         <div className="bg-white rounded-2xl shadow-2xl p-8 backdrop-blur-sm bg-opacity-95 transform transition-all hover:shadow-3xl">
           <div className="text-center">
-            <div className="mx-auto h-40 w-40 rounded-2xl flex items-center justify-center shadow-lg transform hover:scale-110 transition-transform duration-300 relative overflow-hidden bg-white">
+            <div className="mx-auto h-32 w-32 sm:h-40 sm:w-40 rounded-2xl flex items-center justify-center shadow-lg transform hover:scale-110 transition-transform duration-300 relative overflow-hidden bg-white">
               <img
                 src="/logo.png"
                 alt="Company Logo"
@@ -207,10 +207,10 @@ const handleSubmit = async (e: React.FormEvent) => {
               <Sparkles className="absolute -top-1 -right-1 h-4 w-4 text-yellow-400 animate-bounce" />
             </div>
 
-            <h2 className="mt-6 text-3xl font-extrabold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+            <h2 className="mt-4 sm:mt-6 text-2xl sm:text-3xl font-extrabold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
               PlantechX
             </h2>
-            <p className="mt-2 text-sm text-gray-600 font-medium">
+            <p className="mt-2 text-xs sm:text-sm text-gray-600 font-medium">
               Welcome back! Sign in to continue
             </p>
           </div>
