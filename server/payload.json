@@ -1,9 +1,0 @@
-﻿{
-    "path":  "/api/auth/login",
-    "body":  "{\r\n    \"password\":  \"admin123\",\r\n    \"email\":  \"carelinkdesk@gmail.com\"\r\n}",
-    "isBase64Encoded":  false,
-    "headers":  {
-                    "Content-Type":  "application/json"
-                },
-    "httpMethod":  "POST"
-}
