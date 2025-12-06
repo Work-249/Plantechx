@@ -5,7 +5,7 @@ import { LoadingProvider } from './contexts/LoadingContext';
 import { TestResumeProvider } from './contexts/TestResumeContext';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
-import LoadingSpinner from './components/UI/LoadingSpinner';
+import PlantechXLoader from './components/UI/PlantechXLoader';
 import GlobalLoader from './components/UI/GlobalLoader';
 import apiService from './services/api';
 import toast from 'react-hot-toast';
@@ -51,14 +51,7 @@ function App() {
 
   // 🔄 Show loader while verifying authentication
   if (state.loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <LoadingSpinner size="lg" />
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
+    return <PlantechXLoader message="Initializing PlantechX..." />;
   }
 
   // ❌ Authentication error (invalid credentials, etc.)
