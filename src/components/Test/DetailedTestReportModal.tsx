@@ -82,6 +82,11 @@ const DetailedTestReportModal: React.FC<DetailedTestReportModalProps> = ({
   rank,
   totalStudents
 }) => {
+  // Debug: Log report data to console
+  console.log('Report data:', report);
+  console.log('Coding results:', report.codingResults);
+  console.log('Coding summary:', report.codingSummary);
+
   const performanceData = [
     { name: 'Correct', value: report.correctAnswers, color: '#10B981' },
     { name: 'Incorrect', value: report.incorrectAnswers, color: '#EF4444' }

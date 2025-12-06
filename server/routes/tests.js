@@ -1476,7 +1476,9 @@ router.get('/:id/results', auth, authorize('student'), async (req, res) => {
     const attempt = await TestAttempt.findOne({
       testId,
       studentId: req.user._id
-    }).populate('testId', 'testName subject totalMarks questions hasCodingSection codingQuestions');
+    })
+      .populate('testId', 'testName subject testType totalMarks questions hasCodingSection codingQuestions difficulty companyName')
+      .populate('studentId', 'name email batch branch section');
 
     if (!attempt) {
       return res.status(404).json({ error: 'Test attempt not found' });
