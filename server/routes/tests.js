@@ -1472,11 +1472,11 @@ router.post('/:id/submit', auth, authorize('student'), [
 router.get('/:id/results', auth, authorize('student'), async (req, res) => {
   try {
     const testId = req.params.id;
-    
+
     const attempt = await TestAttempt.findOne({
       testId,
       studentId: req.user._id
-    }).populate('testId', 'testName subject totalMarks questions');
+    }).populate('testId', 'testName subject totalMarks questions hasCodingSection codingQuestions');
 
     if (!attempt) {
       return res.status(404).json({ error: 'Test attempt not found' });
@@ -1486,10 +1486,10 @@ router.get('/:id/results', auth, authorize('student'), async (req, res) => {
     const detailedResults = {
       ...attempt.toObject(),
       questionAnalysis: attempt.testId.questions.map(question => {
-        const studentAnswer = attempt.answers.find(a => 
+        const studentAnswer = attempt.answers.find(a =>
           a.questionId.toString() === question._id.toString()
         );
-        
+
         return {
           questionText: question.questionText,
           options: question.options,
@@ -1502,8 +1502,56 @@ router.get('/:id/results', auth, authorize('student'), async (req, res) => {
       })
     };
 
+    // Fetch coding submissions if test has coding section
+    if (attempt.testId.hasCodingSection) {
+      const CodingSubmission = require('../models/CodingSubmission');
+
+      // Get coding submissions for this test attempt or for this student and test's coding questions
+      const codingQuestionIds = (attempt.testId.codingQuestions || []).map(q => q._id || q);
+
+      const codingSubmissions = await CodingSubmission.find({
+        student_id: req.user._id,
+        question_id: { $in: codingQuestionIds }
+      }).populate('question_id', 'title difficulty points');
+
+      // Group submissions by question and get the best score for each
+      const codingResultsByQuestion = {};
+      codingSubmissions.forEach(submission => {
+        const questionId = submission.question_id._id.toString();
+        if (!codingResultsByQuestion[questionId] || submission.score > codingResultsByQuestion[questionId].score) {
+          codingResultsByQuestion[questionId] = {
+            questionId: submission.question_id._id,
+            questionTitle: submission.question_id.title,
+            difficulty: submission.question_id.difficulty,
+            maxPoints: submission.question_id.points || 100,
+            score: submission.score || 0,
+            status: submission.status,
+            testCasesPassed: submission.test_cases_passed,
+            totalTestCases: submission.total_test_cases,
+            language: submission.language,
+            submittedAt: submission.submitted_at
+          };
+        }
+      });
+
+      detailedResults.codingResults = Object.values(codingResultsByQuestion);
+
+      // Calculate total coding score
+      const totalCodingScore = detailedResults.codingResults.reduce((sum, r) => sum + r.score, 0);
+      const maxCodingScore = detailedResults.codingResults.reduce((sum, r) => sum + r.maxPoints, 0);
+
+      detailedResults.codingSummary = {
+        totalScore: totalCodingScore,
+        maxScore: maxCodingScore,
+        percentage: maxCodingScore > 0 ? (totalCodingScore / maxCodingScore) * 100 : 0,
+        questionsAttempted: detailedResults.codingResults.length,
+        totalQuestions: codingQuestionIds.length
+      };
+    }
+
     res.json(detailedResults);
   } catch (error) {
+    logger.errorLog(error, { context: 'Get test results error' });
     res.status(500).json({ error: 'Server error' });
   }
 });

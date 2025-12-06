@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Download, Award, Clock, CheckCircle, XCircle, TrendingUp, FileText, Calendar } from 'lucide-react';
+import { X, Download, Award, Clock, CheckCircle, XCircle, TrendingUp, FileText, Calendar, Code } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 interface QuestionAnalysis {
@@ -15,6 +15,27 @@ interface QuestionAnalysis {
   isCorrect: boolean;
   marksObtained: number;
   marks: number;
+}
+
+interface CodingResult {
+  questionId: string;
+  questionTitle: string;
+  difficulty: string;
+  maxPoints: number;
+  score: number;
+  status: string;
+  testCasesPassed: number;
+  totalTestCases: number;
+  language: string;
+  submittedAt: string;
+}
+
+interface CodingSummary {
+  totalScore: number;
+  maxScore: number;
+  percentage: number;
+  questionsAttempted: number;
+  totalQuestions: number;
 }
 
 interface TestReport {
@@ -44,6 +65,8 @@ interface TestReport {
   endTime: string;
   createdAt: string;
   questionAnalysis: QuestionAnalysis[];
+  codingResults?: CodingResult[];
+  codingSummary?: CodingSummary;
 }
 
 interface DetailedTestReportModalProps {
@@ -373,6 +396,128 @@ ${i + 1}. ${q.questionText}
               ))}
             </div>
           </div>
+
+          {/* Coding Results Section */}
+          {report.codingResults && report.codingResults.length > 0 && (
+            <div className="bg-white rounded-lg border">
+              <div className="px-4 py-3 border-b bg-gradient-to-r from-purple-50 to-blue-50">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Code className="w-5 h-5 text-purple-600" />
+                    <h3 className="font-semibold text-gray-900">Coding Section Results</h3>
+                  </div>
+                  {report.codingSummary && (
+                    <div className="text-sm">
+                      <span className="font-medium text-purple-600">
+                        {report.codingSummary.totalScore}/{report.codingSummary.maxScore} points
+                      </span>
+                      <span className="text-gray-500 ml-2">
+                        ({report.codingSummary.percentage.toFixed(1)}%)
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {report.codingSummary && (
+                <div className="px-4 py-3 bg-gray-50 border-b">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div>
+                      <span className="text-gray-600">Questions Attempted:</span>
+                      <span className="ml-2 font-medium">{report.codingSummary.questionsAttempted}/{report.codingSummary.totalQuestions}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Total Score:</span>
+                      <span className="ml-2 font-medium">{report.codingSummary.totalScore} pts</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Max Score:</span>
+                      <span className="ml-2 font-medium">{report.codingSummary.maxScore} pts</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Success Rate:</span>
+                      <span className="ml-2 font-medium">{report.codingSummary.percentage.toFixed(1)}%</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="divide-y max-h-96 overflow-y-auto">
+                {report.codingResults.map((result, index) => {
+                  const getStatusColor = (status: string) => {
+                    switch (status) {
+                      case 'accepted': return 'bg-green-100 text-green-800 border-green-300';
+                      case 'wrong_answer': return 'bg-red-100 text-red-800 border-red-300';
+                      case 'runtime_error': return 'bg-orange-100 text-orange-800 border-orange-300';
+                      case 'time_limit_exceeded': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+                      case 'compilation_error': return 'bg-red-100 text-red-800 border-red-300';
+                      default: return 'bg-gray-100 text-gray-800 border-gray-300';
+                    }
+                  };
+
+                  const getDifficultyColor = (difficulty: string) => {
+                    switch (difficulty?.toLowerCase()) {
+                      case 'easy': return 'text-green-600';
+                      case 'medium': return 'text-yellow-600';
+                      case 'hard': return 'text-red-600';
+                      default: return 'text-gray-600';
+                    }
+                  };
+
+                  return (
+                    <div key={index} className="p-4 hover:bg-gray-50">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <h4 className="font-medium text-gray-900">
+                            {index + 1}. {result.questionTitle}
+                          </h4>
+                          <div className="flex items-center gap-3 mt-1">
+                            <span className={`text-sm font-medium ${getDifficultyColor(result.difficulty)}`}>
+                              {result.difficulty}
+                            </span>
+                            <span className="text-sm text-gray-500">•</span>
+                            <span className="text-sm text-gray-600">
+                              Language: {result.language}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="text-right ml-4">
+                          <div className="text-lg font-bold text-purple-600">
+                            {result.score}/{result.maxPoints}
+                          </div>
+                          <div className="text-xs text-gray-500">points</div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(result.status)}`}>
+                          {result.status.replace(/_/g, ' ').toUpperCase()}
+                        </span>
+                        <span className="text-sm text-gray-600">
+                          Test Cases: {result.testCasesPassed}/{result.totalTestCases} passed
+                        </span>
+                      </div>
+
+                      {result.testCasesPassed > 0 && (
+                        <div className="mt-2">
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div
+                              className="bg-green-500 h-2 rounded-full transition-all"
+                              style={{ width: `${(result.testCasesPassed / result.totalTestCases) * 100}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="mt-2 text-xs text-gray-500">
+                        Submitted: {new Date(result.submittedAt).toLocaleString()}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
