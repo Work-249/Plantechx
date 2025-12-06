@@ -663,6 +663,37 @@ const TCSTestInterface: React.FC<TCSTestInterfaceProps> = ({
             )}
           </div>
         </div>
+
+        {/* Submit Confirmation Modal for Coding Section */}
+        {showSubmitConfirm && (
+          <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4 shadow-2xl">
+              <div className="flex items-center gap-3 mb-6">
+                <AlertCircle className="text-orange-500 w-8 h-8" />
+                <h3 className="text-xl font-bold text-gray-900">Submit Test?</h3>
+              </div>
+              <p className="text-gray-600 mb-6">
+                Are you sure you want to submit your test? This action cannot be undone.
+              </p>
+              <div className="flex justify-end gap-4">
+                <button
+                  onClick={() => setShowSubmitConfirm(false)}
+                  disabled={submitting}
+                  className="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSubmit}
+                  disabled={submitting}
+                  className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center gap-2"
+                >
+                  {submitting ? 'Submitting...' : 'Submit Test'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
