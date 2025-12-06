@@ -1,0 +1,57 @@
+version: 0.2
+
+env:
+  variables:
+    NODE_ENV: development
+
+phases:
+  install:
+    commands:
+      - echo "=== Installing Dependencies ==="
+      - npm install --legacy-peer-deps || npm install
+      
+  pre_build:
+    commands:
+      - echo "=== Environment Setup ==="
+      - ulimit -n 4096
+      - echo "File descriptor limit set to $(ulimit -n)"
+      - |
+        if [ "$STAGE" = "test" ]; then
+          echo "=== Running Tests ==="
+          npm test
+        else
+          echo "=== Build Environment Setup ==="
+          echo "Repository structure:"
+          ls -la
+          echo "Checking serverless.yml file:"
+          cat serverless.yml
+          echo "=== End of serverless.yml ==="
+          echo "Installing serverless globally"
+          npm install -g serverless
+          echo "Checking serverless version:"
+          serverless --version
+          echo "Validating serverless.yml syntax with detailed output:"
+          serverless print --stage prod --region ap-south-1 --verbose
+        fi
+      
+  build:
+    commands:
+      - |
+        if [ "$STAGE" != "test" ]; then
+          echo "=== Building Serverless Application ==="
+          ulimit -n 4096
+          npx serverless package --stage prod --region ap-south-1 --verbose
+        else
+          echo "=== Tests Completed ==="
+        fi
+      
+  post_build:
+    commands:
+      - echo "=== Build Completion ==="
+      - echo "Build completed successfully"
+
+artifacts:
+  files:
+    - .serverless/**/*
+    - serverless.yml
+  name: Plantechx-artifacts
