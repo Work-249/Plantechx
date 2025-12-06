@@ -1,12 +1,20 @@
 import React, { createContext, useContext, useState } from 'react';
 
 interface TestProgress {
-  testId: string;
+  testId?: string;
   answers: { [questionId: string]: string };
-  currentProgress: number;
-  startTime: Date;
+  currentProgress?: number;
+  startTime?: Date;
   violations: number;
-  lastSaved: Date;
+  lastSaved?: Date;
+  markedForReview?: string[];
+  visited?: string[];
+  currentSectionIndex?: number;
+  currentQuestionIndex?: number;
+  sectionTimeLeft?: number;
+  mcqCompleted?: boolean;
+  selectedCodingQuestionId?: string | null;
+  testStartTime?: number;
 }
 
 interface TestResumeContextType {
