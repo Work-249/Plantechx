@@ -402,10 +402,13 @@ const TCSTestInterface: React.FC<TCSTestInterfaceProps> = ({
       setSubmitting(true);
 
       // If we're in coding section, MCQs were already submitted
-      // Just close the test and exit
+      // Call onSubmit with empty answers and isPartialSubmission=false to signal final submission
       if (mcqCompleted) {
-        setShowSubmitConfirm(false);
+        console.log('✅ Final submission from coding section');
+        const timeSpent = Math.floor((new Date().getTime() - startTime.getTime()) / 1000);
+        await onSubmit([], timeSpent, violations, false);
         localStorage.removeItem(`test_progress_${test._id}`);
+        setShowSubmitConfirm(false);
         setSubmitting(false);
         onExit();
         return;
@@ -418,8 +421,8 @@ const TCSTestInterface: React.FC<TCSTestInterfaceProps> = ({
       }));
 
       const timeSpent = Math.floor((new Date().getTime() - startTime.getTime()) / 1000);
-      await onSubmit(answerArray, timeSpent, violations);
-      
+      await onSubmit(answerArray, timeSpent, violations, false);
+
       // Clear saved progress after successful submission
       localStorage.removeItem(`test_progress_${test._id}`);
       
