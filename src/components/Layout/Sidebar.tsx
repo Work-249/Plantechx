@@ -316,7 +316,7 @@ const Sidebar: React.FC<SidebarProps> = ({ userRole, activeTab, onTabChange, col
       )}
 
       <aside
-        className={`${containerClass} bg-gray-900 text-white h-full w-64 md:w-64`}
+        className={`${containerClass} bg-white text-gray-900 h-full w-64 md:w-64`}
         style={{ width: collapsed ? '4rem' : undefined }}
         role="navigation"
         aria-label="Main navigation"
@@ -338,7 +338,7 @@ const Sidebar: React.FC<SidebarProps> = ({ userRole, activeTab, onTabChange, col
           </h2>
         </div>
 
-        <nav className="space-y-2 overflow-y-auto flex-1 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+        <nav className="space-y-2 overflow-y-auto flex-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
           {visibleItems.map((item: SidebarItem) => {
             const isTestParent = !!item.subItems;
             return (
@@ -364,8 +364,8 @@ const Sidebar: React.FC<SidebarProps> = ({ userRole, activeTab, onTabChange, col
                           activeTab === item.id ||
                           (item.id === 'tests' && (activeTab === 'tests' || activeTab === 'assigned-tests')) ||
                           (item.id === 'my-tests' && activeTab === 'my-tests')
-                            ? 'bg-blue-600 text-white'
-                            : 'text-gray-300 hover:text-white hover:bg-gray-800'
+                            ? 'bg-white text-gray-900 font-semibold'
+                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                         }`}
                         title={collapsed ? item.label : undefined}
                       >
@@ -380,7 +380,7 @@ const Sidebar: React.FC<SidebarProps> = ({ userRole, activeTab, onTabChange, col
 
                       {/* Flyout: show when collapsed & (hovered or activeFlyout) */}
                       {(collapsed && (hoveredItem === item.id || activeFlyout === item.id)) && item.subItems && (
-                        <div className="absolute left-full top-0 ml-2 w-48 bg-gray-800 text-white rounded shadow-lg z-50">
+                        <div className="absolute left-full top-0 ml-2 w-48 bg-white text-gray-900 rounded shadow-lg z-50 border border-gray-200">
                           {item.subItems.map((sub) => (
                             <button
                               key={sub.id}
@@ -390,7 +390,7 @@ const Sidebar: React.FC<SidebarProps> = ({ userRole, activeTab, onTabChange, col
                                 // close drawer on mobile
                                 onCloseDrawer && onCloseDrawer();
                               }}
-                              className="w-full text-left px-3 py-2 text-sm hover:bg-gray-700"
+                              className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-200"
                             >
                               {sub.label}
                             </button>
@@ -407,14 +407,14 @@ const Sidebar: React.FC<SidebarProps> = ({ userRole, activeTab, onTabChange, col
                             <button
                               key={subItem.id}
                               onClick={() => handleSubItemClick(subItem.testType || '', item.id)}
-                              className="w-full flex items-center justify-between px-4 py-2 rounded-lg text-left text-sm transition-colors text-gray-400 hover:text-white hover:bg-gray-800"
+                              className="w-full flex items-center justify-between px-4 py-2 rounded-lg text-left text-sm transition-colors text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                             >
                               <div className="flex items-center gap-2">
                                 <div className="w-2 h-2 rounded-full bg-gray-600" />
                                 {subItem.label}
                               </div>
                               {testCounts && (
-                                <span className="px-2 py-0.5 bg-gray-700 text-gray-300 text-xs font-bold rounded-full">
+                                <span className="px-2 py-0.5 bg-gray-200 text-gray-800 text-xs font-bold rounded-full">
                                   {count}
                                 </span>
                               )}
@@ -432,8 +432,8 @@ const Sidebar: React.FC<SidebarProps> = ({ userRole, activeTab, onTabChange, col
                     }}
                     className={`w-full flex items-center px-3 py-2.5 rounded-lg text-left transition-all duration-200 ${
                       activeTab === item.id
-                        ? 'bg-blue-600 text-white'
-                        : 'text-gray-300 hover:text-white hover:bg-gray-800'
+                        ? 'bg-white text-gray-900 font-semibold'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                     }`}
                     title={collapsed ? item.label : undefined}
                   >
