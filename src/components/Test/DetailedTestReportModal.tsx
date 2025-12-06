@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Download, Award, Clock, CheckCircle, XCircle, TrendingUp, FileText, Calendar, Code } from 'lucide-react';
+import { X, Download, Award, CheckCircle, XCircle, TrendingUp, Code } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 interface QuestionAnalysis {
@@ -47,6 +47,7 @@ interface TestReport {
     difficulty?: string;
     companyName?: string;
     totalMarks: number;
+    hasCodingSection?: boolean;
   };
   studentId: {
     name: string;

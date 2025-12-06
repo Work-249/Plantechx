@@ -87,7 +87,7 @@ const CleanTestInterface: React.FC<CleanTestInterfaceProps> = ({
   const [answers, setAnswers] = useState<{ [questionId: string]: string }>({});
   const [markedForReview, setMarkedForReview] = useState<{ [questionId: string]: boolean }>({});
   const [visitedQuestions, setVisitedQuestions] = useState<{ [questionId: string]: boolean }>({});
-  const [timeLeft, setTimeLeft] = useState(test.duration * 60);
+  const [timeLeft] = useState(test.duration * 60);
   const [sectionTimeLeft, setSectionTimeLeft] = useState<number[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [showConfirmSubmit, setShowConfirmSubmit] = useState(false);
@@ -97,7 +97,6 @@ const CleanTestInterface: React.FC<CleanTestInterfaceProps> = ({
   const [mcqCompleted, setMcqCompleted] = useState(false);
   const codingInterfaceRef = useRef<HTMLDivElement | null>(null);
   const [tabSwitches, setTabSwitches] = useState(0);
-  const [fullscreenViolations, setFullscreenViolations] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // The function must return JSX below (which is already present in your code)
