@@ -228,7 +228,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ activeTab }) => {
     }
   };
 
-  const handleSubmitTest = async (answers: any[], timeSpent: number, violations?: number) => {
+  const handleSubmitTest = async (answers: any[], timeSpent: number, violations?: number, isPartialSubmission?: boolean) => {
     if (!activeTest || !testStartTime) return;
 
     type SubmitTestResponse = {
@@ -246,21 +246,26 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ activeTab }) => {
         timeSpent,
         violations
       ) as SubmitTestResponse;
-      setActiveTest(null);
-      setTestStartTime(null);
 
-      // Handle different test types
-      if (response.testType === 'Practice' && response.instantFeedback) {
-        // Show instant feedback for practice tests
-        setInstantResults(response);
-        setShowInstantResults(true);
-      } else {
-        // For Assessment/Assignment tests, just reload the tests
-        // The results will be shown through the DetailedTestReportModal when user clicks View Results
+      // Only clear test state if this is NOT a partial submission
+      // Partial submission means MCQs are submitted but coding section is still pending
+      if (!isPartialSubmission) {
+        setActiveTest(null);
+        setTestStartTime(null);
+
+        // Handle different test types
+        if (response.testType === 'Practice' && response.instantFeedback) {
+          // Show instant feedback for practice tests
+          setInstantResults(response);
+          setShowInstantResults(true);
+        } else {
+          // For Assessment/Assignment tests, just reload the tests
+          // The results will be shown through the DetailedTestReportModal when user clicks View Results
+        }
+
+        // Reload assigned tests
+        loadAssignedTests();
       }
-
-      // Reload assigned tests
-      loadAssignedTests();
     } catch (error) {
       alert(error instanceof Error ? error.message : 'Failed to submit test');
     }

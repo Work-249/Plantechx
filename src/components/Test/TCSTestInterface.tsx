@@ -44,7 +44,7 @@ interface Test {
 interface TCSTestInterfaceProps {
   test: Test;
   startTime: Date;
-  onSubmit: (answers: any[], timeSpent: number, violations?: number) => Promise<void>;
+  onSubmit: (answers: any[], timeSpent: number, violations?: number, isPartialSubmission?: boolean) => Promise<void>;
   onExit: () => void;
 }
 
@@ -157,7 +157,17 @@ const TCSTestInterface: React.FC<TCSTestInterfaceProps> = ({
         try {
           // Check if there's a coding section - if yes, transition to it instead of submitting
           if (test.hasCodingSection && test.codingQuestions && test.codingQuestions.length > 0) {
-            console.log('⚠️ Violations reached 3 - Transitioning to coding section instead of auto-submitting');
+            console.log('⚠️ Violations reached 3 - Submitting MCQ answers and transitioning to coding section');
+            const answerArray = Object.entries(answers).map(([questionId, selectedAnswer]) => ({
+              questionId,
+              selectedAnswer
+            }));
+
+            const timeSpent = Math.floor((new Date().getTime() - startTime.getTime()) / 1000);
+
+            // Pass isPartialSubmission=true so parent doesn't close the test
+            await onSubmit(answerArray, timeSpent, violations, true);
+
             setMcqCompleted(true);
             if (test.codingQuestions.length > 0) {
               setSelectedCodingQuestionId(test.codingQuestions[0]._id || test.codingQuestions[0].questionId);
@@ -166,7 +176,7 @@ const TCSTestInterface: React.FC<TCSTestInterfaceProps> = ({
             return;
           }
 
-          // No coding section - submit MCQ answers
+          // No coding section - submit MCQ answers and exit
           console.log('⚠️ Violations reached 3 - Auto-submitting test (no coding section)');
           const answerArray = Object.entries(answers).map(([questionId, selectedAnswer]) => ({
             questionId,
@@ -174,11 +184,11 @@ const TCSTestInterface: React.FC<TCSTestInterfaceProps> = ({
           }));
 
           const timeSpent = Math.floor((new Date().getTime() - startTime.getTime()) / 1000);
-          await onSubmit(answerArray, timeSpent, violations);
-          
+          await onSubmit(answerArray, timeSpent, violations, false);
+
           // Clear saved progress after submission
           localStorage.removeItem(`test_progress_${test._id}`);
-          
+
           setSubmitting(false);
           onExit();
         } catch (error) {
@@ -363,7 +373,9 @@ const TCSTestInterface: React.FC<TCSTestInterfaceProps> = ({
           }));
 
           const timeSpent = Math.floor((new Date().getTime() - startTime.getTime()) / 1000);
-          await onSubmit(answerArray, timeSpent, violations);
+
+          // Pass isPartialSubmission=true so parent doesn't close the test
+          await onSubmit(answerArray, timeSpent, violations, true);
 
           // Now transition to coding section
           setMcqCompleted(true);

@@ -67,7 +67,8 @@ interface CleanTestInterfaceProps {
   onSubmit: (
     answers: { questionId: string; selectedAnswer: string; timeSpent: number }[],
     timeSpent: number,
-    violations?: number
+    violations?: number,
+    isPartialSubmission?: boolean
   ) => Promise<void>;
   onExit: () => void;
 }
@@ -372,12 +373,10 @@ const CleanTestInterface: React.FC<CleanTestInterfaceProps> = ({
 
       const timeSpent = Math.floor((Date.now() - startTime.getTime()) / 1000 / 60);
 
-      console.debug('handleSubmit: calling onSubmit', { submissionAnswersLength: submissionAnswers.length, timeSpent, tabSwitches });
-      await onSubmit(submissionAnswers, timeSpent, tabSwitches);
-      console.debug('handleSubmit: onSubmit resolved');
-
-      // If already in coding section, just exit the test
+      // If already in coding section, this is final submission
       if (mcqCompleted) {
+        console.debug('handleSubmit: final submission (coding section completed)');
+        await onSubmit(submissionAnswers, timeSpent, tabSwitches, false);
         if (document.fullscreenElement) {
           await document.exitFullscreen();
         }
@@ -386,8 +385,10 @@ const CleanTestInterface: React.FC<CleanTestInterfaceProps> = ({
         return;
       }
 
-      // If there's a coding section and we haven't entered it yet, transition to coding
+      // If there's a coding section and we haven't entered it yet, this is partial submission
       if (test.hasCodingSection && test.codingQuestions && test.codingQuestions.length > 0) {
+        console.debug('handleSubmit: partial submission (transitioning to coding)');
+        await onSubmit(submissionAnswers, timeSpent, tabSwitches, true);
         setMcqCompleted(true);
         setShowQuestionPalette(false);
         setShowConfirmSubmit(false);
@@ -398,7 +399,9 @@ const CleanTestInterface: React.FC<CleanTestInterfaceProps> = ({
         return;
       }
 
-      // No coding section, just exit
+      // No coding section, this is final submission
+      console.debug('handleSubmit: final submission (no coding section)');
+      await onSubmit(submissionAnswers, timeSpent, tabSwitches, false);
       if (document.fullscreenElement) {
         await document.exitFullscreen();
       }
