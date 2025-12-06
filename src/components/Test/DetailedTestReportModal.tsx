@@ -83,9 +83,14 @@ const DetailedTestReportModal: React.FC<DetailedTestReportModalProps> = ({
   totalStudents
 }) => {
   // Debug: Log report data to console
-  console.log('Report data:', report);
+  console.log('=== DETAILED REPORT DATA ===');
+  console.log('Full report:', JSON.stringify(report, null, 2));
+  console.log('Has coding results?', report.codingResults ? 'YES' : 'NO');
+  console.log('Coding results count:', report.codingResults?.length || 0);
   console.log('Coding results:', report.codingResults);
   console.log('Coding summary:', report.codingSummary);
+  console.log('Test has coding section?', report.testId?.hasCodingSection);
+  console.log('===========================');
 
   const performanceData = [
     { name: 'Correct', value: report.correctAnswers, color: '#10B981' },

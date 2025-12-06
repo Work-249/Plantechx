@@ -1481,8 +1481,8 @@ router.get('/:id/results', auth, authorize('student'), async (req, res) => {
         path: 'testId',
         select: 'testName subject testType totalMarks questions hasCodingSection codingQuestions difficulty companyName',
         populate: {
-          path: 'codingQuestions',
-          select: '_id'
+          path: 'codingQuestions.questionId',
+          select: '_id title difficulty points'
         }
       })
       .populate('studentId', 'name email batch branch section');
@@ -1516,16 +1516,19 @@ router.get('/:id/results', auth, authorize('student'), async (req, res) => {
       const CodingSubmission = require('../models/CodingSubmission');
 
       // Get coding submissions for this test attempt or for this student and test's coding questions
-      const codingQuestionIds = attempt.testId.codingQuestions.map(q => q._id || q);
+      // codingQuestions is array of objects with questionId field
+      logger.infoLog(`Test has coding section. codingQuestions array:`, JSON.stringify(attempt.testId.codingQuestions));
 
-      logger.infoLog(`Fetching coding submissions for student ${req.user._id} and questions ${codingQuestionIds.join(', ')}`);
+      const codingQuestionIds = attempt.testId.codingQuestions.map(q => q.questionId?._id || q.questionId || q._id || q);
+
+      logger.infoLog(`Fetching coding submissions for student ${req.user._id} and questions ${JSON.stringify(codingQuestionIds)}`);
 
       const codingSubmissions = await CodingSubmission.find({
         student_id: req.user._id,
         question_id: { $in: codingQuestionIds }
       }).populate('question_id', 'title difficulty points');
 
-      logger.infoLog(`Found ${codingSubmissions.length} coding submissions`);
+      logger.infoLog(`Found ${codingSubmissions.length} coding submissions for test ${testId}`);
 
       // Group submissions by question and get the best score for each
       const codingResultsByQuestion = {};
@@ -1560,8 +1563,13 @@ router.get('/:id/results', auth, authorize('student'), async (req, res) => {
         questionsAttempted: detailedResults.codingResults.length,
         totalQuestions: codingQuestionIds.length
       };
+
+      logger.infoLog(`Sending coding results to client: ${detailedResults.codingResults.length} results`);
+    } else {
+      logger.infoLog(`No coding section or no coding questions in test`);
     }
 
+    logger.infoLog(`Sending detailed results with ${detailedResults.codingResults ? detailedResults.codingResults.length : 0} coding results`);
     res.json(detailedResults);
   } catch (error) {
     logger.errorLog(error, { context: 'Get test results error' });
