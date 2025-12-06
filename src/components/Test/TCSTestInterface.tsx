@@ -402,11 +402,9 @@ const TCSTestInterface: React.FC<TCSTestInterfaceProps> = ({
       setSubmitting(true);
 
       // If we're in coding section, MCQs were already submitted
-      // Call onSubmit with empty answers and isPartialSubmission=false to signal final submission
+      // Just exit without calling onSubmit again (coding submissions are already saved)
       if (mcqCompleted) {
-        console.log('✅ Final submission from coding section');
-        const timeSpent = Math.floor((new Date().getTime() - startTime.getTime()) / 1000);
-        await onSubmit([], timeSpent, violations, false);
+        console.log('✅ Exiting from coding section - MCQs already submitted, coding solutions saved separately');
         localStorage.removeItem(`test_progress_${test._id}`);
         setShowSubmitConfirm(false);
         setSubmitting(false);

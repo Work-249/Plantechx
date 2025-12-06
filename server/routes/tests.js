@@ -1477,7 +1477,14 @@ router.get('/:id/results', auth, authorize('student'), async (req, res) => {
       testId,
       studentId: req.user._id
     })
-      .populate('testId', 'testName subject testType totalMarks questions hasCodingSection codingQuestions difficulty companyName')
+      .populate({
+        path: 'testId',
+        select: 'testName subject testType totalMarks questions hasCodingSection codingQuestions difficulty companyName',
+        populate: {
+          path: 'codingQuestions',
+          select: '_id'
+        }
+      })
       .populate('studentId', 'name email batch branch section');
 
     if (!attempt) {
@@ -1505,16 +1512,20 @@ router.get('/:id/results', auth, authorize('student'), async (req, res) => {
     };
 
     // Fetch coding submissions if test has coding section
-    if (attempt.testId.hasCodingSection) {
+    if (attempt.testId.hasCodingSection && attempt.testId.codingQuestions && attempt.testId.codingQuestions.length > 0) {
       const CodingSubmission = require('../models/CodingSubmission');
 
       // Get coding submissions for this test attempt or for this student and test's coding questions
-      const codingQuestionIds = (attempt.testId.codingQuestions || []).map(q => q._id || q);
+      const codingQuestionIds = attempt.testId.codingQuestions.map(q => q._id || q);
+
+      logger.infoLog(`Fetching coding submissions for student ${req.user._id} and questions ${codingQuestionIds.join(', ')}`);
 
       const codingSubmissions = await CodingSubmission.find({
         student_id: req.user._id,
         question_id: { $in: codingQuestionIds }
       }).populate('question_id', 'title difficulty points');
+
+      logger.infoLog(`Found ${codingSubmissions.length} coding submissions`);
 
       // Group submissions by question and get the best score for each
       const codingResultsByQuestion = {};
