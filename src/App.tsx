@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { useAuth } from './contexts/AuthContext';
 import { LoadingProvider } from './contexts/LoadingContext';
@@ -12,33 +12,40 @@ import toast from 'react-hot-toast';
 
 function App() {
   const { state, dispatch } = useAuth();
+  const [minLoadingComplete, setMinLoadingComplete] = useState(false);
+
+  useEffect(() => {
+    const minLoadingTime = setTimeout(() => {
+      setMinLoadingComplete(true);
+    }, 3000);
+
+    return () => clearTimeout(minLoadingTime);
+  }, []);
 
   useEffect(() => {
     const initializeAuth = async () => {
       const token = localStorage.getItem('token');
       const userStr = localStorage.getItem('user');
-      
+
       if (token && userStr) {
         try {
           dispatch({ type: 'LOGIN_START' });
 
           const currentUser = await apiService.getCurrentUser();
 
-          dispatch({ 
-            type: 'LOGIN_SUCCESS', 
-            payload: { user: currentUser, token } 
+          dispatch({
+            type: 'LOGIN_SUCCESS',
+            payload: { user: currentUser, token }
           });
 
-          // ✅ Success toast when user is auto-logged-in
           toast.success(`Welcome back, ${currentUser?.name || 'User'}!`);
-          
+
         } catch (error) {
           console.error('Token validation failed:', error);
           localStorage.removeItem('token');
           localStorage.removeItem('user');
           dispatch({ type: 'LOGOUT' });
 
-          // ⚠️ Token invalid — session expired
           toast.error('Session expired. Please log in again.');
         }
       } else {
@@ -49,8 +56,7 @@ function App() {
     initializeAuth();
   }, [dispatch]);
 
-  // 🔄 Show loader while verifying authentication
-  if (state.loading) {
+  if (state.loading || !minLoadingComplete) {
     return <PlantechXLoader message="Initializing PlantechX..." />;
   }
 

@@ -19,11 +19,11 @@ const PlantechXLoader: React.FC<PlantechXLoaderProps> = ({ message = 'Loading...
   }, []);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white overflow-hidden">
       {particles.map((particle) => (
         <div
           key={particle.id}
-          className="absolute w-1 h-1 bg-blue-400 rounded-full animate-float opacity-30"
+          className="absolute w-1 h-1 bg-blue-500 rounded-full animate-float opacity-20"
           style={{
             left: `${particle.x}%`,
             top: `${particle.y}%`,
@@ -33,32 +33,32 @@ const PlantechXLoader: React.FC<PlantechXLoaderProps> = ({ message = 'Loading...
         />
       ))}
 
-      <div className="absolute inset-0 bg-gradient-radial from-blue-500/10 via-transparent to-transparent animate-pulse-slow" />
+      <div className="absolute inset-0 bg-gradient-radial from-blue-100/30 via-transparent to-transparent animate-pulse-slow" />
 
       <div className="relative z-10 flex flex-col items-center justify-center space-y-8">
         <div className="relative perspective-1000">
           <div className="relative w-48 h-48 transform-style-3d animate-rotate-y">
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-3xl shadow-2xl opacity-80 blur-xl animate-pulse" />
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-3xl shadow-2xl opacity-40 blur-xl animate-pulse" />
 
             <div className="absolute inset-4 bg-gradient-to-br from-blue-600 via-cyan-500 to-blue-700 rounded-2xl shadow-2xl flex items-center justify-center transform rotate-cube animate-float">
               <div className="text-white font-bold text-4xl tracking-wider drop-shadow-2xl animate-glow">
-                P<span className="text-cyan-300">X</span>
+                P<span className="text-cyan-200">X</span>
               </div>
             </div>
 
-            <div className="absolute -inset-2 bg-gradient-to-r from-blue-500 via-cyan-500 to-blue-500 rounded-3xl opacity-30 blur-2xl animate-spin-slow" />
+            <div className="absolute -inset-2 bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-400 rounded-3xl opacity-20 blur-2xl animate-spin-slow" />
           </div>
 
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-64 h-64 border-4 border-blue-400/30 rounded-full animate-ping-slow" />
+            <div className="w-64 h-64 border-4 border-blue-300/40 rounded-full animate-ping-slow" />
           </div>
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-56 h-56 border-2 border-cyan-400/20 rounded-full animate-spin-reverse" />
+            <div className="w-56 h-56 border-2 border-cyan-300/30 rounded-full animate-spin-reverse" />
           </div>
         </div>
 
         <div className="text-center space-y-4">
-          <h1 className="text-5xl font-bold text-white tracking-widest animate-slide-up">
+          <h1 className="text-5xl font-bold text-gray-800 tracking-widest animate-slide-up">
             <span className="inline-block animate-bounce-letter" style={{ animationDelay: '0s' }}>P</span>
             <span className="inline-block animate-bounce-letter" style={{ animationDelay: '0.1s' }}>l</span>
             <span className="inline-block animate-bounce-letter" style={{ animationDelay: '0.2s' }}>a</span>
@@ -67,19 +67,19 @@ const PlantechXLoader: React.FC<PlantechXLoaderProps> = ({ message = 'Loading...
             <span className="inline-block animate-bounce-letter" style={{ animationDelay: '0.5s' }}>e</span>
             <span className="inline-block animate-bounce-letter" style={{ animationDelay: '0.6s' }}>c</span>
             <span className="inline-block animate-bounce-letter" style={{ animationDelay: '0.7s' }}>h</span>
-            <span className="inline-block text-cyan-400 animate-bounce-letter mx-1" style={{ animationDelay: '0.8s' }}>X</span>
+            <span className="inline-block text-blue-600 animate-bounce-letter mx-1" style={{ animationDelay: '0.8s' }}>X</span>
           </h1>
 
           <div className="flex items-center justify-center space-x-2">
-            <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
-            <div className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-            <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
+            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
+            <div className="w-2 h-2 bg-cyan-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
           </div>
 
-          <p className="text-blue-200 text-lg font-medium animate-pulse-slow">{message}</p>
+          <p className="text-gray-600 text-lg font-medium animate-pulse-slow">{message}</p>
         </div>
 
-        <div className="w-64 h-1 bg-gray-700 rounded-full overflow-hidden">
+        <div className="w-64 h-1 bg-gray-200 rounded-full overflow-hidden">
           <div className="h-full bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 rounded-full animate-loading-bar" />
         </div>
       </div>
