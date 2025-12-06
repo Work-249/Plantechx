@@ -95,6 +95,7 @@ const CleanTestInterface: React.FC<CleanTestInterfaceProps> = ({
   const [showQuestionPalette, setShowQuestionPalette] = useState(true);
   const [selectedCodingQuestionId, setSelectedCodingQuestionId] = useState<string | null>(null);
   const [mcqCompleted, setMcqCompleted] = useState(false);
+  const [fullscreenViolations, setFullscreenViolations] = useState(0);
   const codingInterfaceRef = useRef<HTMLDivElement | null>(null);
   const [tabSwitches, setTabSwitches] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -163,7 +164,7 @@ const CleanTestInterface: React.FC<CleanTestInterfaceProps> = ({
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
     };
-  }, [showInstructions, test.hasSections, test.sections, currentSectionIndex, handleAutoSubmit, setIsFullscreen, setFullscreenViolations]);
+  }, [showInstructions, test.hasSections, test.sections, currentSectionIndex, handleAutoSubmit]);
 
   const enterFullscreen = async () => {
     try {

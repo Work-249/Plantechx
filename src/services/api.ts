@@ -153,7 +153,16 @@ class ApiService {
     });
   }
 
-  async getCurrentUser() {
+  async getCurrentUser(): Promise<{
+    id: string;
+    name: string;
+    email: string;
+    role: 'master_admin' | 'college_admin' | 'faculty' | 'student';
+    collegeId?: string;
+    collegeName?: string;
+    hasLoggedIn: boolean;
+    lastLogin?: string;
+  }> {
     return this.request('/auth/me');
   }
 
