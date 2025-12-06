@@ -148,6 +148,30 @@ ${i + 1}. ${q.questionText}
    Result: ${q.isCorrect ? '✓ Correct' : '✗ Incorrect'}
    Marks: ${q.marksObtained}/${q.marks}
 `).join('\n')}
+
+${report.codingResults && report.codingResults.length > 0 ? `
+Coding Section Results
+======================
+
+${report.codingSummary ? `
+Summary
+-------
+Total Score: ${report.codingSummary.totalScore}/${report.codingSummary.maxScore} points (${report.codingSummary.percentage.toFixed(2)}%)
+Questions Attempted: ${report.codingSummary.questionsAttempted}/${report.codingSummary.totalQuestions}
+
+` : ''}
+Question-wise Results
+--------------------
+${report.codingResults.map((cr, i) => `
+${i + 1}. ${cr.questionTitle}
+   Difficulty: ${cr.difficulty}
+   Language: ${cr.language}
+   Status: ${cr.status.replace(/_/g, ' ').toUpperCase()}
+   Score: ${cr.score}/${cr.maxPoints} points
+   Test Cases Passed: ${cr.testCasesPassed}/${cr.totalTestCases}
+   Submitted At: ${new Date(cr.submittedAt).toLocaleString()}
+`).join('\n')}
+` : ''}
     `;
 
     const blob = new Blob([reportContent], { type: 'text/plain' });
