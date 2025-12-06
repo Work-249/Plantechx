@@ -1437,6 +1437,7 @@ router.post('/:id/submit', auth, authorize('student'), [
       testType: test.testType,
       violations,
       status,
+      attemptId: testAttempt._id,
       results: {
         totalMarks: testAttempt.totalMarks,
         marksObtained: testAttempt.marksObtained,

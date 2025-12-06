@@ -44,6 +44,7 @@ interface Test {
 interface TCSTestInterfaceProps {
   test: Test;
   startTime: Date;
+  testAttemptId?: string | null;
   onSubmit: (answers: any[], timeSpent: number, violations?: number, isPartialSubmission?: boolean) => Promise<void>;
   onExit: () => void;
 }
@@ -53,6 +54,7 @@ type QuestionStatus = 'not-visited' | 'not-answered' | 'answered' | 'marked';
 const TCSTestInterface: React.FC<TCSTestInterfaceProps> = ({
   test,
   startTime,
+  testAttemptId,
   onSubmit,
   onExit
 }) => {
@@ -644,6 +646,7 @@ const TCSTestInterface: React.FC<TCSTestInterfaceProps> = ({
             {selectedCodingQuestionId ? (
               <CodingInterface
                 questionId={selectedCodingQuestionId}
+                testAttemptId={testAttemptId || undefined}
                 fullscreen={true}
                 isPractice={test.testType === 'Practice'}
                 suppressAlerts={true}

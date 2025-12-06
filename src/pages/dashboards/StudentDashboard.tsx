@@ -59,6 +59,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ activeTab }) => {
   const [activeTestType, setActiveTestType] = useState('Assessment');
   const [activeTest, setActiveTest] = useState<any>(null);
   const [testStartTime, setTestStartTime] = useState<Date | null>(null);
+  const [testAttemptId, setTestAttemptId] = useState<string | null>(null);
   const [showInstantResults, setShowInstantResults] = useState(false);
   const [instantResults, setInstantResults] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -233,6 +234,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ activeTab }) => {
 
     type SubmitTestResponse = {
       testType?: string;
+      attemptId?: string;
       instantFeedback?: boolean;
       results?: any;
       [key: string]: any;
@@ -247,11 +249,18 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ activeTab }) => {
         violations
       ) as SubmitTestResponse;
 
+      // Store attemptId for coding section submissions
+      if (response.attemptId) {
+        setTestAttemptId(response.attemptId);
+        console.log('Test attempt ID stored:', response.attemptId);
+      }
+
       // Only clear test state if this is NOT a partial submission
       // Partial submission means MCQs are submitted but coding section is still pending
       if (!isPartialSubmission) {
         setActiveTest(null);
         setTestStartTime(null);
+        setTestAttemptId(null);
 
         // Handle different test types
         if (response.testType === 'Practice' && response.instantFeedback) {
@@ -340,10 +349,12 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ activeTab }) => {
       <TCSStyleTestInterface
         test={activeTest}
         startTime={testStartTime}
+        testAttemptId={testAttemptId}
         onSubmit={handleSubmitTest}
         onExit={() => {
           setActiveTest(null);
           setTestStartTime(null);
+          setTestAttemptId(null);
         }}
       />
     );
